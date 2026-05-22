@@ -791,29 +791,72 @@
         }
     }
 
+    function getVal(id, def) {
+        const el = document.getElementById(id);
+        return el ? el.value : def;
+    }
+
+    const TYPE_LABELS = {
+        'none': 'Brak PV - nowa instalacja',
+        'old_rules': 'Ma PV - stare zasady (net-metering)',
+        'new_rules': 'Ma PV - nowe zasady (net-billing)',
+        'only_bat': 'Tylko magazyn energii'
+    };
+
     function sendLeadToSheets(email, phone) {
         const data = {
+            // Dane kontaktowe
             email: email,
             phone: phone,
-            type: selectedType || 'nieznany',
-            pvPower: document.getElementById('sl-new-pv') ? document.getElementById('sl-new-pv').value : '0',
-            consumption: document.getElementById('sl-cons') ? document.getElementById('sl-cons').value : '0',
-            backup: wantsBackup ? 'Tak' : 'Nie',
             timestamp: new Date().toLocaleString('pl-PL'),
-            source: 'kalkulator-aieco'
+            source: 'kalkulator-aieco',
+
+            // Krok 1 - typ klienta
+            typ_klienta: TYPE_LABELS[selectedType] || selectedType || 'nieznany',
+
+            // Krok 2 - obecna/nowa instalacja
+            obecna_moc_pv_kwp: getVal('sl-cur-pv', '0'),
+            obecny_falownik_kw: getVal('sl-cur-inv', '0'),
+            typ_falownika: getVal('cur-inv-type', ''),
+            docelowa_moc_pv_kwp: getVal('sl-target-pv', '0'),
+            nowa_moc_pv_kwp: getVal('sl-new-pv', '0'),
+            kierunek_pv: getVal('pv-direction', 'south'),
+            moc_przylacza_kw: getVal('sl-conn', '15'),
+            operator: getVal('cur-operator', ''),
+            taryfa_obecna: getVal('cur-tariff', ''),
+            zasady_rozliczen: getVal('cur-rules', ''),
+
+            // Krok 3 - zużycie i potrzeby
+            tryb_wprowadzania: inputMode,
+            zuzycie_roczne_kwh: getVal('sl-cons', '0'),
+            rachunek_miesieczny_zl: getVal('sl-bill', '0'),
+            zuzycie_pompa_kwh: getVal('sl-hp-cons', '0'),
+            zuzycie_ev_kwh: getVal('sl-ev-cons', '0'),
+            profil_zuzycia: getVal('usage-profile', ''),
+            strategia_zimowa: getVal('winter-strategy', ''),
+            backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
+
+            // Krok 4 - finanse
+            taryfa_docelowa: getVal('target-tariff', ''),
+            dofinansowanie_zl: getVal('sl-sub', '0'),
+            stawka_podatkowa: getVal('tax-rate', '0.12')
         };
 
-        fetch(GOOGLE_SHEETS_API_URL, {
+        // Wysyłka przez URL params (WordPress-safe, omija CORS całkowicie)
+        const params = new URLSearchParams();
+        Object.entries(data).forEach(([k, v]) => params.append(k, v));
+
+        fetch(GOOGLE_SHEETS_API_URL + '?' + params.toString(), {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
         .then(() => {
-            console.log('Lead wysłany do Google Sheets');
+            console.log('✅ Lead wysłany do Google Sheets');
         })
         .catch(err => {
-            console.warn('Błąd wysyłania leada:', err.message);
+            console.warn('⚠️ Błąd wysyłania leada:', err.message);
         });
     }
 
