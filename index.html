@@ -618,7 +618,7 @@
 
 <script>
     // NOWE: Konfiguracja Google Sheets
-    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/d/YOUR_SCRIPT_ID/usercopy"; // Zmień na swój URL!
+    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbwZKaXhqYlWQwWY76JF6Tu0SRnPmcZAaESvVBCGo8sA2QxBqsXH5wRLXdZ1lBDz7KL2/exec"; // Zmień na swój URL!
     
     // Modals
     function showErrorModal(message) {
@@ -713,8 +713,8 @@
         document.getElementById('progress-bar').style.width = progress + '%';
         
         document.getElementById('btn-back').style.display = step === 1 ? 'none' : 'block';
-        document.getElementById('btn-next').style.display = step === totalSteps ? 'none' : (step < totalSteps ? 'block' : 'none');
-        document.getElementById('btn-calc').style.display = step === totalSteps ? 'none' : (step === 4 ? 'block' : 'none');
+        document.getElementById('btn-next').style.display = (step < 4) ? 'block' : 'none';
+        document.getElementById('btn-calc').style.display = (step === 4) ? 'block' : 'none';
         
         currentStep = step;
         window.scrollTo(0, 0);
@@ -762,6 +762,9 @@
         
         // Generuj wyniki
         generateResults();
+        
+        // Automatycznie wyślij lead do Google Sheets
+        sendLeadToSheets(email, phone);
     }
 
     function generateResults() {
@@ -786,6 +789,32 @@
         } catch(e) {
             showErrorModal('Błąd generowania wyników: ' + e.message);
         }
+    }
+
+    function sendLeadToSheets(email, phone) {
+        const data = {
+            email: email,
+            phone: phone,
+            type: selectedType || 'nieznany',
+            pvPower: document.getElementById('sl-new-pv') ? document.getElementById('sl-new-pv').value : '0',
+            consumption: document.getElementById('sl-cons') ? document.getElementById('sl-cons').value : '0',
+            backup: wantsBackup ? 'Tak' : 'Nie',
+            timestamp: new Date().toLocaleString('pl-PL'),
+            source: 'kalkulator-aieco'
+        };
+
+        fetch(GOOGLE_SHEETS_API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(() => {
+            console.log('Lead wysłany do Google Sheets');
+        })
+        .catch(err => {
+            console.warn('Błąd wysyłania leada:', err.message);
+        });
     }
 
     function exportToGoogleSheets() {
