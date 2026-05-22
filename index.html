@@ -600,19 +600,23 @@
                         <span>Sugerowana Moc PV:</span><strong id="res-pv" style="color:#fff;">-</strong>
                     </div>
                     <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Falownik / Logika:</span><strong id="res-inv" style="color:#fff;">-</strong>
+                        <span>Falownik / Logika:</span>
+                        <div style="text-align:right;">
+                            <strong id="res-inv" style="color:#fff;">-</strong><br>
+                            <span style="font-size:0.7rem; color:var(--primary);">*Zoptymalizowano pod kątem orientacji i magazynu</span>
+                        </div>
                     </div>
                     <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
                         <span>Magazyn Energii:</span><strong id="res-bat" style="color:#fff;">-</strong>
                     </div>
                     <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Moduł Komunikacji:</span><strong id="res-module" style="color: var(--primary);">-</strong>
+                        <span>Moduł Komunikacji:</span><strong id="res-logger" style="color: var(--primary);">-</strong>
                     </div>
                     <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
                         <span>Zasilanie awaryjne:</span><strong id="res-backup" style="color: var(--accent-blue);">-</strong>
                     </div>
                     <div class="flex-between" style="padding: 8px 0;">
-                        <span>Docelowa Taryfa:</span><strong id="res-tariff" style="color:#fff;">-</strong>
+                        <span>Docelowa Taryfa:</span><strong id="res-grid" style="color:#fff;">-</strong>
                     </div>
                     <p style="color: var(--primary); font-size:0.9rem; margin-top:15px; margin-bottom:0;">Dokładną wycenę systemu prześlemy mailowo!</p>
                 </div>
@@ -1072,16 +1076,22 @@
         requiredInvPower = requiredInvPower * 1.2;
         
         if (selectedType === 'only_bat') {
-            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)"; 
-         } else if (selectedType === 'none' || addedPV > 0 || isString) {
+            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)";
+        } else if (isSolis) {
+            // Solis zawsze wymaga własnego falownika hybrydowego
+            // Minimalnie 8kW HV — dobieramy na podstawie mocy PV
+            let solisMinPower = Math.max(requiredInvPower, 8);
+            let matchedInv = invList.find(i => i.p >= solisMinPower) || invList[invList.length - 1];
+            matchedInvName = `Wymiana na: ${matchedInv.name}`;
+        } else if (selectedType === 'none' || addedPV > 0 || isString) {
             let matchedInv = invList.find(i => i.p >= requiredInvPower) || invList[invList.length - 1];
             if (isString && addedPV === 0) {
                 matchedInvName = `Wymiana na: ${matchedInv.name}`;
-             } else {
+            } else {
                 matchedInvName = matchedInv.name;
-             }
+            }
         } else {
-            matchedInvName = "Istniejący Falownik Hybrydowy"; 
+            matchedInvName = "Istniejący Falownik Hybrydowy";
         }
 
         let retailPrice = 0; 
