@@ -584,7 +584,7 @@
                 <div class="summary-section" style="border: 1px solid var(--accent-blue); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                     <h4 style="color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-top:0;">WYBIERZ POJEMNOŚĆ MAGAZYNU ENERGII</h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Zwiększenie magazynu poszerza możliwości zysku na tarczy RCE. Kliknij na kafelek poniżej, aby sprawdzić inne opcje.</p>
-                    <div id="bat-variants-grid" class="upsell-grid"></div>
+                    <div id="bat-variants-grid" style="width:100%;"></div>
                 </div>
 
                 <!-- SPECYFIKACJA SYSTEMU -->
@@ -1184,12 +1184,12 @@
                         data-kwh="${v.kwh}" data-model="${v.model}" data-brand="${brand}"
                         data-dep="${dep}"
                         onclick="selectBattery(this, ${v.kwh}, '${v.model}', '${brand}', ${dep})"
-                        style="background:${isSelected?bgSel:'var(--bg-dark)'}; border:2px solid ${isSelected?accent:'var(--border-color)'}; border-radius:10px; padding:12px; text-align:center; cursor:pointer; transition:all .2s;">
-                <span style="background:${badgeBg}; color:${badgeColor}; font-size:0.62rem; font-weight:700; padding:2px 8px; border-radius:20px; display:block; margin-bottom:6px; text-transform:uppercase;">${badgeText}</span>
-                <div style="font-size:1.3rem; font-weight:800; color:#fff;">${v.kwh} kWh</div>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin:3px 0 8px;">${v.model}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">Sprawdź na mailu</div>
-                <div style="border:1px dashed ${accent}; border-radius:6px; padding:4px; font-size:0.8rem; color:${accent}; font-weight:700;">+ ${dep.toLocaleString('pl-PL')} zł Depozytu</div>
+                        style="background:${isSelected?bgSel:'var(--bg-dark)'}; border:2px solid ${isSelected?accent:'var(--border-color)'}; border-radius:12px; padding:16px 12px; text-align:center; cursor:pointer; transition:all .2s;">
+                <span style="background:${badgeBg}; color:${badgeColor}; font-size:0.62rem; font-weight:700; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:8px; text-transform:uppercase;">${badgeText}</span>
+                <div style="font-size:1.5rem; font-weight:800; color:#fff; margin-bottom:2px;">${v.kwh} kWh</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">${v.model}</div>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:8px;">Sprawdź na mailu</div>
+                <div style="border:1px dashed ${accent}; border-radius:6px; padding:5px 4px; font-size:0.85rem; color:${accent}; font-weight:700;">+ ${dep.toLocaleString('pl-PL')} zł Depozytu</div>
             </div>`;
         }
 
@@ -1198,19 +1198,25 @@
 
         let html = '';
 
-        // ─── Opcja 1: 4ECO ───
-        html += `<div style="margin-bottom:18px;">
-            <p style="color:var(--primary); font-weight:700; margin:0 0 10px 0; font-size:0.95rem;">⚡ Opcja 1: System 4ECO</p>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">`;
+        // ─── Opcja 1: 4ECO — pełna szerokość, 3 kolumny ───
+        html += `
+        <div style="margin-bottom:24px;">
+            <p style="color:var(--primary); font-weight:700; margin:0 0 12px 0; font-size:1rem; display:flex; align-items:center; gap:6px;">
+                ⚡ Opcja 1: System 4ECO
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;">`;
         variants4ECO.forEach(v => {
             html += buildCard(v, v.kwh === selectedKwh && selectedBrand === '4eco', '4eco', arbProfit);
         });
         html += `</div></div>`;
 
-        // ─── Opcja 2: Solis ───
-        html += `<div>
-            <p style="color:var(--accent-blue); font-weight:700; margin:0 0 10px 0; font-size:0.95rem;">⚡ Opcja 2: System Solis</p>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">`;
+        // ─── Opcja 2: Solis — pełna szerokość, 3 kolumny ───
+        html += `
+        <div style="margin-bottom:8px;">
+            <p style="color:var(--accent-blue); font-weight:700; margin:0 0 12px 0; font-size:1rem; display:flex; align-items:center; gap:6px;">
+                ⚡ Opcja 2: System Solis
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;">`;
         variantsSolis.forEach(v => {
             html += buildCard(v, v.kwh === selectedKwh && selectedBrand === 'solis', 'solis', arbProfit);
         });
