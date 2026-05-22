@@ -9,7 +9,8 @@
 //    - Kto ma dostęp: Wszyscy (anonimowi)
 // 5. Skopiuj URL wdrożenia → wklej do index.html jako GOOGLE_SHEETS_API_URL
 
-const SHEET_NAME = 'Leady';
+// ⚠️ WAŻNE: Zmień nazwę na taką jaką ma Twój arkusz (domyślnie "Arkusz1")
+const SHEET_NAME = 'Arkusz2';
 
 const HEADERS = [
   // Kontakt
@@ -67,8 +68,14 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(SHEET_NAME);
 
+    // Jeśli arkusz istnieje ale jest pusty - dodaj nagłówki
+    // Jeśli nie istnieje - utwórz
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_NAME);
+    }
+
+    // Dodaj nagłówki jeśli arkusz jest pusty (brak danych w wierszu 1)
+    if (sheet.getLastRow() === 0) {
       sheet.appendRow(HEADERS);
       const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
       headerRange.setFontWeight('bold');
