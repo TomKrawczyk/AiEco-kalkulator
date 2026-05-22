@@ -28,7 +28,7 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             margin: 0;
-            padding: 15px;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -45,71 +45,57 @@
         .app-subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 8px; }
 
         /* Stepper */
-        .stepper-nav { display: flex; justify-content: space-between; align-items: center; position: relative; margin-bottom: 20px; padding: 0 10px; gap: 5px; flex-wrap: wrap; }
+        .stepper-nav { display: flex; justify-content: space-between; align-items: center; position: relative; margin-bottom: 20px; padding: 0 10px; }
         .stepper-nav::before { content: ''; position: absolute; top: 50%; left: 20px; right: 20px; height: 2px; background: var(--border-color); z-index: 1; transform: translateY(-50%); }
         .stepper-progress { position: absolute; top: 50%; left: 20px; height: 2px; background: var(--primary); z-index: 2; transform: translateY(-50%); transition: width 0.4s ease; width: 0%; }
-        .step-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-dark); border: 2px solid var(--border-color); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; position: relative; flex-shrink: 0; transition: 0.2s; z-index: 3; }
+        .step-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-dark); border: 2px solid var(--border-color); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; z-index: 3; position: relative; transition: 0.3s ease; cursor: pointer; }
         .step-circle:hover { border-color: var(--primary); color: var(--primary); }
         .step-circle.active { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
         .step-circle.completed { background: var(--primary); border-color: var(--primary); color: var(--bg-dark); }
-        .step-label { position: absolute; top: 48px; font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
+        .step-label { position: absolute; top: 48px; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
         .step-circle.active .step-label { color: var(--primary); }
 
-        @media (max-width: 768px) {
-            .stepper-nav::before { display: none; }
-            .stepper-progress { display: none; }
-            .step-label { display: none; }
-            .step-circle { width: 32px; height: 32px; font-size: 0.85rem; }
-        }
-
         /* Kontener kroków */
-        .step-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; min-height: 400px; overflow: hidden; box-sizing: border-box; }
+        .step-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; min-height: 450px; }
         .step-content { display: none; animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
         .step-content.active { display: block; opacity: 1; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .step-title { font-size: 1.6rem; margin: 0 0 10px 0; color: #fff; text-align: center; line-height: 1.2; word-wrap: break-word; }
+        .step-title { font-size: 1.6rem; margin: 0 0 10px 0; color: #fff; text-align: center; }
         .step-desc { text-align: center; color: var(--text-muted); margin-bottom: 35px; font-size: 0.95rem; }
-
-        @media (max-width: 768px) {
-            .step-container { padding: 20px; }
-            .step-title { font-size: 1.4rem; }
-            .step-desc { font-size: 0.9rem; margin-bottom: 25px; }
-        }
 
         /* Kafelki */
         .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         @media (max-width: 650px) { .tiles-grid { grid-template-columns: 1fr; } }
-        .tile { background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
+        .tile { background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
         .tile:hover { border-color: var(--primary); transform: translateY(-4px); background: rgba(16, 185, 129, 0.05); }
         .tile.selected { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px var(--primary-glow); }
         .tile-icon { font-size: 2.8rem; line-height: 1; margin-bottom: 5px; }
-        .tile-title { font-weight: 700; color: #fff; font-size: 1.1rem; margin: 5px 0 5px 0;}
+        .tile-title { font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0;}
         .tile-desc { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.4;}
 
         .choice-tiles { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .choice-tile { flex: 1; min-width: 90px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 10px; padding: 12px 8px; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
-        .choice-tile small { font-size: 0.75rem; font-weight: 400; margin-top: 5px; opacity: 0.8; display: block; }
+        .choice-tile { flex: 1; min-width: 100px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 10px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.3; }
+        .choice-tile small { font-size: 0.75rem; font-weight: 400; margin-top: 5px; opacity: 0.8; }
         .choice-tile:hover { border-color: var(--primary); color: #fff; }
         .choice-tile.active { background: rgba(16, 185, 129, 0.1); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
 
         /* Formularze i Suwaki */
-        .form-group { margin-bottom: 25px; position: relative; box-sizing: border-box; max-width: 100%; }
-        label { display: block; font-weight: 600; margin-bottom: 12px; font-size: 0.95rem; color: #E2E8F0; word-wrap: break-word; }
-        select, input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: inherit; font-size: 1rem; }
+        .form-group { margin-bottom: 25px; position: relative; }
+        label { display: block; font-weight: 600; margin-bottom: 12px; font-size: 0.95rem; color: #E2E8F0;}
+        select, input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; font-family: inherit; font-size: 1rem; transition: 0.2s; box-sizing: border-box; }
         select:focus, input[type="number"]:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus { outline: none; border-color: var(--primary); }
-        .val-display { font-weight: 800; color: var(--primary); font-size: 1.25rem; position: absolute; right: 14px; top: 12px; z-index: 2; background: var(--bg-card); padding: 0 8px; max-width: 40%; text-align: right; word-break: break-word; }
+        .val-display { font-weight: 800; color: var(--primary); font-size: 1.25rem; position: absolute; right: 0; top: 0; }
         input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: var(--border-color); border-radius: 10px; outline: none; margin-top: 20px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 0 12px var(--primary-glow); }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 0 12px var(--primary-glow); transition: 0.1s; }
         input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
-        input[type="range"]::-moz-range-thumb { width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; border: none; box-shadow: 0 0 12px var(--primary-glow); }
 
         /* Zakładki i Toggles */
-        .input-switch { display: flex; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 25px; gap: 0; }
-        .input-switch button { flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.3s; font-size: 0.85rem; }
+        .input-switch { display: flex; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 25px; }
+        .input-switch button { flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.3s; }
         .input-switch button.active { background: var(--bg-input); color: var(--primary); }
-        .toggle-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; flex-wrap: nowrap; gap: 15px; box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden; }
-        .toggle-box span { font-weight: 600; font-size: 1rem; color: #fff; flex: 1; min-width: 0; word-break: break-word; }
-        .switch { position: relative; display: inline-block; width: 50px; min-width: 50px; height: 26px; flex-shrink: 0; }
+        .toggle-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; cursor: pointer; }
+        .toggle-box span { font-weight: 600; font-size: 1rem; color: #fff;}
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider-toggle { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
         .slider-toggle:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
@@ -118,50 +104,43 @@
         .conditional-box { display: none; background: rgba(255,255,255,0.02); padding: 25px 20px; border-radius: 10px; border: 1px dashed var(--border-color); margin-top: -10px; margin-bottom: 25px; }
         .conditional-box.active { display: block; animation: fadeIn 0.3s; }
 
-        .alert-info { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #A7F3D0; margin-top: 10px; line-height: 1.5; word-wrap: break-word; }
-        .alert-warn { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #FCA5A5; margin-top: 10px; line-height: 1.5; word-wrap: break-word; }
-        .alert-error { background: rgba(239, 68, 68, 0.15); border-left: 4px solid var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #FCA5A5; margin-top: 10px; display: none; }
+        .alert-info { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #A7F3D0; margin-top: 10px; line-height: 1.5;}
+        .alert-warn { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #FCA5A5; margin-top: 10px; line-height: 1.5;}
         .section-divider { width: 100%; height: 1px; background: var(--border-color); margin: 35px 0; }
 
         /* Przycisk Info */
-        .info-btn { display: inline-flex; justify-content: center; align-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: var(--bg-dark); font-size: 0.7rem; font-weight: 800; cursor: pointer; margin-left: 5px; }
+        .info-btn { display: inline-flex; justify-content: center; align-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: var(--bg-dark); font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-left: 8px; vertical-align: middle; transition: 0.2s;}
         .info-btn:hover { background: #fff; transform: scale(1.1);}
 
         /* Nawigacja dolna */
-        .footer-nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px; flex-wrap: wrap; }
-        .btn { padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.3s; border: none; font-family: inherit; min-width: 100px; }
-        .btn-prev { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); flex: 0.5; min-width: 80px; }
+        .footer-nav { display: flex; justify-content: space-between; margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px; }
+        .btn { padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.3s; border: none; font-family: inherit; }
+        .btn-prev { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
         .btn-prev:hover { background: var(--border-color); color: #fff; }
-        .btn-next { background: var(--primary); color: #fff; flex: 1; box-shadow: 0 4px 15px var(--primary-glow); min-width: 150px; }
+        .btn-next { background: var(--primary); color: #fff; flex: 1; margin-left: 15px; box-shadow: 0 4px 15px var(--primary-glow); }
         .btn-next:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn-pdf { background: var(--accent-blue); width: 100%; color: white; margin-top: 15px; font-size: 1rem; }
+        .btn-pdf { background: var(--accent-blue); width: 100%; color: white; margin-top: 15px; font-size: 1rem;}
         .btn-pdf:hover { background: #0284c7; }
 
-        @media (max-width: 600px) {
-            .btn { font-size: 0.9rem; padding: 12px 16px; }
-            .btn-prev { flex: 1; }
-            .btn-next { flex: 1; }
-        }
-
         /* WYNIKI - KROK 5 */
-        .advisor-message { background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%); border-left: 4px solid var(--primary); padding: 25px; border-radius: 12px; margin-bottom: 25px; font-size: 1rem; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; }
+        .advisor-message { background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%); border-left: 4px solid var(--primary); padding: 25px; border-radius: 12px; margin-bottom: 25px; font-size: 1.05rem; line-height: 1.6; color: #E2E8F0; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .advisor-message strong { color: #fff; }
 
         .summary-section { background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-bottom: 20px; }
-        .summary-section h4 { margin: 0 0 15px 0; color: #fff; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px; word-wrap: break-word; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 0.95rem; flex-wrap: wrap; gap: 10px; }
-        .flex-between span { color: var(--text-muted); flex: 1; }
-        .flex-between strong { color: #fff; text-align: right; flex-shrink: 0; word-wrap: break-word; }
+        .summary-section h4 { margin: 0 0 15px 0; color: #fff; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;}
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 0.95rem; }
+        .flex-between span { color: var(--text-muted); }
+        .flex-between strong { color: #fff; text-align: right;}
         
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         @media (max-width: 650px) { .grid-3 { grid-template-columns: 1fr; } }
         .sav-box { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 20px 15px; border-radius: 10px; text-align: center; }
         .sav-box span { display: block; font-size: 0.8rem; color: var(--primary); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;}
-        .sav-box strong { font-size: 1.8rem; color: #fff; font-weight: 800; word-wrap: break-word; }
+        .sav-box strong { font-size: 1.8rem; color: #fff; font-weight: 800;}
 
         /* Oś czasu Dźwigni */
         .lever-container { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; }
-        .lever-title { font-weight: 700; color: #fff; margin-bottom: 10px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .lever-title { font-weight: 700; color: #fff; margin-bottom: 10px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
         .timeline-wrap { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin-bottom: 5px; border: 1px solid #000; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
         .t-seg { display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
         .t-sleep { background: #1E293B; color: #64748B; }
@@ -172,15 +151,15 @@
         .t-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;}
 
         /* NOWY WYGLĄD: DLA INŻYNIERÓW */
-        details.math-explainer { background: #0B1120; border: 1px solid var(--accent-blue); border-radius: 12px; margin-top: 40px; margin-bottom: 25px; overflow: hidden; box-shadow: 0 4px 20px rgba(14, 165, 233, 0.2); }
-        details.math-explainer summary { padding: 20px 25px; font-weight: 700; cursor: pointer; color: #38bdf8; background: linear-gradient(90deg, rgba(14, 165, 233, 0.15) 0%, transparent 100%); list-style: none; user-select: none; }
+        details.math-explainer { background: #0B1120; border: 1px solid var(--accent-blue); border-radius: 12px; margin-top: 40px; margin-bottom: 25px; overflow: hidden; box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15); transition: all 0.3s ease; }
+        details.math-explainer summary { padding: 20px 25px; font-weight: 700; cursor: pointer; color: #38bdf8; background: linear-gradient(90deg, rgba(14, 165, 233, 0.15) 0%, transparent 100%); list-style: none; display: flex; justify-content: space-between; align-items: center; outline: none; font-size: 1.05rem; }
         details.math-explainer summary:hover { background: rgba(14, 165, 233, 0.25); }
         details.math-explainer summary::before { content: '⚙️'; margin-right: 12px; font-size: 1.3rem; }
         details.math-explainer summary::-webkit-details-marker { display: none; }
         details.math-explainer summary::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; color: #38bdf8; }
         details[open].math-explainer summary::after { transform: rotate(180deg); }
         
-        .math-content { padding: 25px 30px; border-top: 1px dashed var(--accent-blue); font-size: 0.9rem; color: #cbd5e1; line-height: 1.7; background: rgba(0,0,0,0.3); overflow-x: auto; }
+        .math-content { padding: 25px 30px; border-top: 1px dashed var(--accent-blue); font-size: 0.9rem; color: #cbd5e1; line-height: 1.7; background: rgba(0,0,0,0.3); }
         .math-content h6 { color: #fff; margin: 25px 0 10px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;}
         .math-content h6:first-child { margin-top: 0; }
         .math-content ul { padding-left: 20px; margin-top: 5px; }
@@ -190,15 +169,12 @@
         /* Warianty Magazynu Upsell */
         .upsell-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
         @media (max-width: 650px) { .upsell-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .upsell-grid { grid-template-columns: 1fr; } }
-        .bat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
-        .bat-card--active { box-shadow: 0 0 0 2px var(--primary); }
         .upsell-card { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
         .upsell-card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .upsell-card.active { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 15px var(--primary-glow); }
-        .upsell-badge { background: var(--accent-blue); color: #fff; font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; }
+        .upsell-badge { background: var(--accent-blue); color: #fff; font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 8px; font-weight: 700; text-transform: uppercase;}
         .upsell-badge.rec { background: var(--primary); }
-        .upsell-title { font-weight: 800; color: #fff; font-size: 1.1rem; margin-bottom: 4px; word-wrap: break-word; }
+        .upsell-title { font-weight: 800; color: #fff; font-size: 1.1rem; margin-bottom: 4px; }
         .upsell-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
         .upsell-price { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
         .upsell-deposit { font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-top: 5px; background: rgba(16,185,129,0.1); padding: 4px; border-radius: 4px; border: 1px dashed var(--primary); }
@@ -207,7 +183,7 @@
         .upsell-card.danger:hover { border-color: var(--danger); transform: translateY(-3px); }
         .upsell-card.danger.active { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
 
-        /* PDF */
+        /* STYLIZACJA PDF - Jasny profesjonalny grafitowy motyw dla oszczędności tuszu */
         #print-report { display: none; }
         
         @media print {
@@ -215,43 +191,35 @@
             body { background-color: #FFFFFF !important; color: #1E293B !important; padding: 0; margin: 0; font-family: 'Inter', sans-serif; }
             .aieco-app { display: none !important; }
             #print-report { display: block !important; padding: 30px; background-color: #FFFFFF !important; color: #1E293B !important; }
-            a[href]:after { content: none !important; }
-            ::-webkit-any-link { text-decoration: none; }
-        }
-        @page {
-            margin: 15mm 12mm;
-            @bottom-center { content: none; }
-            @bottom-left   { content: none; }
-            @bottom-right  { content: none; }
-        }
+            
+            .print-header { border-bottom: 2px solid #334155 !important; margin-bottom: 30px; padding-bottom: 15px; text-align: center; display: flex; flex-direction: column; align-items: center;}
+            .print-logo-img { height: 60px; object-fit: contain; margin-bottom: 10px; filter: invert(1); }
+            .print-header h2 { margin: 5px 0; font-size: 1.5rem; color: #0F172A !important; }
+            .print-header p { color: #475569 !important; font-size: 14px; margin: 0;}
+            
+            .pdf-advisor-msg { font-size: 14px; margin-bottom: 25px; line-height: 1.5; padding: 15px; background: #FFFFFF !important; border-left: 4px solid #334155 !important; border-radius: 8px; color: #1E293B !important; border: 1px solid #E2E8F0;}
 
-        /* Modal */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
-        .modal.show { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--bg-card); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 500px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
-        .modal-content h3 { color: #fff; margin-top: 0; }
-        .modal-content p { color: var(--text-muted); margin-bottom: 20px; }
-        .modal-button { background: var(--primary); color: #fff; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .modal-button:hover { background: var(--primary-hover); }
+            .print-section { background: #FFFFFF !important; border: 1px solid #E2E8F0 !important; border-radius: 12px; padding: 25px; margin-bottom: 25px; page-break-inside: avoid; }
+            .print-section h3 { border-bottom: 1px dashed #CBD5E1 !important; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; color: #334155 !important; text-transform: uppercase; font-size: 1.2rem; }
+            .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; font-size: 14px; }
+            .print-grid p { margin: 10px 0; color: #475569 !important; display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 5px;}
+            .print-grid p strong { color: #0F172A !important; font-weight: 600; text-align: right;}
+            
+            .print-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
+            .print-grid-3 div { border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; background: #F8FAFC; }
+            .print-grid-3 p { margin: 0 0 10px 0; color: #475569 !important; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .print-grid-3 strong { color: #10B981 !important; font-size: 1.4rem; font-weight: 800; display: block; }
+            
+            .lever-container { background: #F8FAFC !important; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #E2E8F0 !important;}
+            .lever-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: #0F172A !important;}
+            .timeline-wrap { display: flex; height: 25px; border-radius: 6px; overflow: hidden; margin-bottom: 5px; border: 1px solid #CBD5E1 !important;}
+            .t-labels { display: flex; justify-content: space-between; font-size: 10px; color: #64748B !important; }
+            
+            .disclaimer { font-size: 11px; color: #64748B !important; margin-top: 40px; text-align: justify; line-height: 1.5; border-top: 1px dashed #CBD5E1 !important; padding-top: 20px;}
+        }
     </style>
 </head>
 <body>
-
-<div id="errorModal" class="modal">
-    <div class="modal-content">
-        <h3>Błąd!</h3>
-        <p id="errorMessage"></p>
-        <button class="modal-button" onclick="closeErrorModal()">OK</button>
-    </div>
-</div>
-
-<div id="successModal" class="modal">
-    <div class="modal-content">
-        <h3>✅ Sukces!</h3>
-        <p id="successMessage">Dane zostały wysłane pomyślnie do Google Sheets!</p>
-        <button class="modal-button" onclick="closeSuccessModal()">OK</button>
-    </div>
-</div>
 
 <div class="aieco-app">
     <div class="app-header">
@@ -325,7 +293,7 @@
                     Masz zwykły falownik. Aieco zaproponuje wymianę na odpowiednio dobrany <strong>Falownik Hybrydowy</strong>.
                 </div>
 
-                <label class="toggle-box">
+                <label class="toggle-box" style="margin-top: 25px;">
                     <span>📈 Chcę rozbudować obecną instalację PV</span>
                     <div class="switch"><input type="checkbox" id="toggle-expand-pv" onchange="toggleBox('box-expand-pv', this)"><span class="slider-toggle"></span></div>
                 </label>
@@ -334,7 +302,7 @@
                         <label>Docelowa moc po rozbudowie (kWp):</label>
                         <span class="val-display" id="val-target-pv">Auto</span>
                         <input type="range" id="sl-target-pv" min="0" max="40" step="0.5" value="0" oninput="updateAutoVal('sl-target-pv', 'val-target-pv', ' kWp')">
-                        <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw "Auto", a Aieco sam wyliczy, o ile paneli musisz powiększyć system.</div>
+                        <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw "Auto", a Aieco sam wyliczy, o ile paneli musisz powiększyć system na podstawie rachunków.</div>
                     </div>
                 </div>
             </div>
@@ -344,7 +312,7 @@
                     <label>Docelowa moc instalacji PV (kWp):</label>
                     <span class="val-display" id="val-new-pv">Auto</span>
                     <input type="range" id="sl-new-pv" min="0" max="30" step="0.5" value="0" oninput="updateAutoVal('sl-new-pv', 'val-new-pv', ' kWp')">
-                    <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw wartość na "Auto (0)". Silnik Aieco sam dobierze ilość paneli.</div>
+                    <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw wartość na "Auto (0)". Silnik Aieco sam dobierze odpowiednią ilość paneli na podstawie Twojego zużycia prądu.</div>
                 </div>
             </div>
 
@@ -352,15 +320,15 @@
                 <label>Orientacja paneli względem słońca:</label>
                 <div class="choice-tiles" style="display: grid; grid-template-columns: 1fr 1fr;">
                     <div class="choice-tile active pv-dir-tile" onclick="selectPvDir(this, 'south')">☀️ Południe</div>
-                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east_west')">🌤️ Wschód-Zachód</div>
-                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east')">🌅 Wschód</div>
-                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'west')">🌇 Zachód</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east_west')">🌤️ Wschód - Zachód</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east')">🌅 Tylko Wschód</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'west')">🌇 Tylko Zachód</div>
                 </div>
                 <input type="hidden" id="pv-direction" value="south">
             </div>
 
             <div class="form-group" style="margin-top: 35px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
-                <label>Maksymalna moc przyłącza (kW):</label>
+                <label>Maksymalna moc przyłącza (Limit od sieci z faktury) (kW):</label>
                 <span class="val-display" id="val-conn">15 kW</span>
                 <input type="range" id="sl-conn" min="10" max="40" step="1" value="15" oninput="updateVal('sl-conn', 'val-conn', ' kW')">
             </div>
@@ -372,7 +340,7 @@
 
             <div class="tiles-grid" style="grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label>Operator (OSD):</label>
+                    <label>Obecny Operator (OSD):</label>
                     <select id="cur-operator">
                         <option value="tauron">Tauron</option>
                         <option value="pge">PGE</option>
@@ -385,30 +353,30 @@
                 <div class="form-group" style="margin-bottom: 0;">
                     <label>Obecna Taryfa:</label>
                     <select id="cur-tariff">
-                        <option value="g11">G11 / C11</option>
-                        <option value="g12">G12 / C12</option>
-                        <option value="g12w">G12w / C12w</option>
+                        <option value="g11">G11 / C11 (Stała cena)</option>
+                        <option value="g12">G12 / C12 (Strefowa)</option>
+                        <option value="g12w">G12w / C12w (Strefowa + Weekend)</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group">
-                <label>System rozliczeń z siecią:</label>
+                <label>System rozliczeń z siecią (OSD):</label>
                 <select id="cur-rules">
-                    <option value="net-billing">Net-billing (Nowe)</option>
-                    <option value="net-metering">Net-metering (Stare)</option>
-                    <option value="none">Brak instalacji PV</option>
+                    <option value="net-billing">Net-billing (Nowe zasady rynkowe)</option>
+                    <option value="net-metering">Net-metering (Stare zasady, opusty)</option>
+                    <option value="none">Brak instalacji PV (Zakup 100% z sieci)</option>
                 </select>
             </div>
 
             <div class="input-switch" style="margin-top: 35px; border-top: 1px dashed var(--border-color); padding-top: 25px;">
-                <button type="button" id="btn-mode-kwh" class="active" onclick="setInputMode('kwh')">Zużycie (kWh)</button>
-                <button type="button" id="btn-mode-bill" onclick="setInputMode('bill')">Rachunek (zł/msc)</button>
+                <button type="button" id="btn-mode-kwh" class="active" onclick="setInputMode('kwh')">Znam roczne zużycie (kWh)</button>
+                <button type="button" id="btn-mode-bill" onclick="setInputMode('bill')">Znam rachunek (zł/msc)</button>
             </div>
 
             <div id="input-kwh" style="display:block;">
                 <div class="form-group">
-                    <label>Roczne zużycie bytowe:</label>
+                    <label>Roczne zużycie bytowe (TV, AGD, Oświetlenie):</label>
                     <span class="val-display" id="val-cons">4000 kWh</span>
                     <input type="range" id="sl-cons" min="1500" max="15000" step="100" value="4000" oninput="updateVal('sl-cons', 'val-cons', ' kWh')">
                 </div>
@@ -416,7 +384,7 @@
 
             <div id="input-bill" style="display:none; background: rgba(2, 132, 199, 0.05); border: 1px dashed var(--accent-blue); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
                 <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Średni rachunek miesięczny:</label>
+                    <label>Twój średni miesięczny rachunek za prąd:</label>
                     <span class="val-display" id="val-bill">400 zł</span>
                     <input type="range" id="sl-bill" min="100" max="2500" step="50" value="400" oninput="updateBillConversion()">
                 </div>
@@ -424,50 +392,53 @@
             </div>
 
             <label class="toggle-box">
-                <span>🔥 Pompa Ciepła/Gaz.</span>
+                <span>🔥 Ogrzewanie elektr. / Pompa Ciepła</span>
                 <div class="switch"><input type="checkbox" id="toggle-hp" onchange="toggleBox('box-hp', this)"><span class="slider-toggle"></span></div>
             </label>
             <div id="box-hp" class="conditional-box">
                 <div class="form-group">
-                    <label>Dodatkowe zużycie PC (kWh/rok):</label>
+                    <label>Szacowane dodatkowe zużycie Pompy (kWh/rok):</label>
                     <span class="val-display" id="val-hp-cons">3500 kWh</span>
                     <input type="range" id="sl-hp-cons" min="1000" max="12000" step="100" value="3500" oninput="updateVal('sl-hp-cons', 'val-hp-cons', ' kWh')">
                 </div>
             </div>
 
             <label class="toggle-box">
-                <span>🚗 Samochód Elektryczny</span>
+                <span>🚗 Samochód Elektryczny (EV)</span>
                 <div class="switch"><input type="checkbox" id="toggle-ev" onchange="toggleBox('box-ev', this)"><span class="slider-toggle"></span></div>
             </label>
             <div id="box-ev" class="conditional-box">
                 <div class="form-group">
-                    <label>Ładowanie EV w domu (kWh/rok):</label>
+                    <label>Zużycie na ładowanie EV w domu (kWh/rok):</label>
                     <span class="val-display" id="val-ev-cons">2500 kWh</span>
                     <input type="range" id="sl-ev-cons" min="500" max="10000" step="100" value="2500" oninput="updateVal('sl-ev-cons', 'val-ev-cons', ' kWh')">
                 </div>
             </div>
             
             <div class="form-group" style="margin-top: 25px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
-                <label>Kiedy największe zużycie? <span class="info-btn" onclick="toggleBox('info-autocons', {checked: !document.getElementById('info-autocons').classList.contains('active')})">i</span></label>
+                <label>
+                    Kiedy domownicy zużywają najwięcej prądu? 
+                    <span class="info-btn" onclick="toggleBox('info-autocons', {checked: !document.getElementById('info-autocons').classList.contains('active')})">i</span>
+                </label>
                 
                 <div id="info-autocons" class="conditional-box" style="margin-top: 5px; margin-bottom: 15px; padding: 15px; background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
-                    <strong style="color: var(--primary); font-size: 0.9rem;">Autokonsumpcja:</strong>
-                    <p style="font-size: 0.8rem; margin: 5px 0 0 0; line-height: 1.5;">Procent energii ze słońca wykorzystywanej na bieżąco w domu.</p>
+                    <strong style="color: var(--primary); font-size: 0.9rem; display: block; margin-bottom: 5px;">Co to jest Autokonsumpcja?</strong>
+                    <p style="font-size: 0.8rem; margin: 0; line-height: 1.5;">To ułamek energii ze słońca, który dom wykorzystuje "na bieżąco", zanim trafi ona do sieci lub do magazynu. Prąd, którego nie pobierzesz z sieci (bo dom zjadł swój własny), generuje najwyższe oszczędności (~1,30 zł / kWh). Wybór odpowiedniego profilu pozwala naszemu kalkulatorowi precyzyjniej wyliczyć oszczędności.</p>
                 </div>
 
                 <div class="choice-tiles">
-                    <div class="choice-tile active usage-tile" onclick="selectUsageProfile(this, 'standard')">🌅 Rano/Wieczorem<br><small>Praca poza</small></div>
-                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'day')">☀️ W dzień<br><small>Zdalna/Dzieci</small></div>
-                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'smart')">🤖 Smart<br><small>Automatyka</small></div>
+                    <div class="choice-tile active usage-tile" onclick="selectUsageProfile(this, 'standard')">🌅 Rano i Wieczorem<br><small>Praca poza domem</small></div>
+                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'day')">☀️ Głównie w dzień<br><small>Praca zdalna / Dzieci</small></div>
+                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'smart')">🤖 Smart Home<br><small>Automatyka urządzeń</small></div>
                 </div>
                 <input type="hidden" id="usage-profile" value="standard">
             </div>
 
             <div class="form-group" style="margin-bottom: 35px;">
-                <label>Strategia zimowa:</label>
+                <label>Jaka strategia na zimę (dobór baterii) interesuje Cię najbardziej?</label>
                 <div class="choice-tiles" style="display: grid; grid-template-columns: 1fr 1fr;">
-                    <div class="choice-tile active winter-tile" onclick="selectWinterStrategy(this, 'eco')">🛡️ Szczyt<br><small>Bateria na droższe</small></div>
-                    <div class="choice-tile winter-tile" onclick="selectWinterStrategy(this, 'max')">🔋 Maks<br><small>Całodobowa</small></div>
+                    <div class="choice-tile active winter-tile" onclick="selectWinterStrategy(this, 'eco')">🛡️ Ochrona w szczycie<br><small>Bateria na najdroższe godziny</small></div>
+                    <div class="choice-tile winter-tile" onclick="selectWinterStrategy(this, 'max')">🔋 Pełna niezależność<br><small>Bateria na całą dobę z taryfy nocnej</small></div>
                 </div>
                 <input type="hidden" id="winter-strategy" value="eco">
             </div>
@@ -475,14 +446,14 @@
             <div class="section-divider"></div>
 
             <div class="form-group">
-                <label>Zasilanie awaryjne (Backup)?</label>
+                <label>Czy potrzebujesz zasilania awaryjnego (Backupu)?</label>
                 <div class="choice-tiles">
-                    <div class="choice-tile" onclick="selectBackup(this, 'yes')">Tak</div>
-                    <div class="choice-tile active" onclick="selectBackup(this, 'no')">Nie</div>
-                    <div class="choice-tile" onclick="selectBackup(this, 'info')">Info</div>
+                    <div class="choice-tile" onclick="selectBackup(this, 'yes')">Tak, to ważne</div>
+                    <div class="choice-tile active" onclick="selectBackup(this, 'no')">Nie potrzebuję</div>
+                    <div class="choice-tile" onclick="selectBackup(this, 'info')">Co to jest?</div>
                 </div>
-                <div id="backup-info" class="alert-info" style="display:none; background: rgba(2, 132, 199, 0.1); border-color: var(--accent-blue);">
-                    <strong>EPS:</strong> Zasilanie w przypadku wyłączeń sieci.
+                <div id="backup-info" class="alert-info" style="display:none; background: rgba(2, 132, 199, 0.1); border-color: var(--accent-blue); color: #BAE6FD;">
+                    <strong>Zasilanie awaryjne (EPS):</strong> Pozwala na korzystanie z prądu z magazynu nawet podczas wyłączeń i awarii sieci (tzw. blackoutu). Wymaga odpowiedniego falownika i modyfikacji rozdzielnicy.
                 </div>
             </div>
             
@@ -490,22 +461,26 @@
 
         <div class="step-content" id="step-4">
             <h2 class="step-title">Finanse i Dotacje</h2>
-            <p class="step-desc">Wyceń system i dostosuj budżet.</p>
+            <p class="step-desc">Wyceń wygenerowany system i dostosuj budżet.</p>
 
             <div class="form-group" style="margin-bottom: 15px;">
-                <label>Docelowa Taryfa:</label>
+                <label>Docelowa Taryfa (Plan zarabiania na baterii):</label>
                 <select id="target-tariff" onchange="checkTariff()">
-                    <option value="g12">G12 / G12w (Tania noc)</option>
-                    <option value="g11">G11 (Stała)</option>
+                    <option value="g12">G12 / G12w (Tania noc) - Dźwignia bateryjna</option>
+                    <option value="g11">G11 (Stała cena)</option>
                 </select>
             </div>
 
             <div id="tariff-warning" class="alert-warn" style="display:none; margin-bottom: 35px;">
-                ⚠️ <strong>Uwaga:</strong> G11 ograniczy potencjał finansowy systemu.
+                ⚠️ <strong>Ważna uwaga:</strong> Zmiana taryfy na stałą (G11) znacznie ograniczy potencjał finansowy systemu Aieco. W taryfie G11 system nie będzie mógł kupować taniego prądu w nocy i sprzedawać go z zyskiem w szczytach. Zdecydowanie rekomendujemy pozostanie przy strefowej taryfie G12/G12w, by zmaksymalizować zyski!
             </div>
 
-            <label class="toggle-box">
-                <span>💶 Dotacja Mój Prąd</span>
+            <div class="form-group" style="display: none;">
+                <input type="number" id="sl-capex" value="" oninput="updateFinance()">
+            </div>
+
+            <label class="toggle-box" style="border-top: 1px dashed var(--border-color); padding-top: 25px;">
+                <span>💶 Chcę skorzystać z dotacji Mój Prąd</span>
                 <div class="switch"><input type="checkbox" id="toggle-sub" onchange="toggleBox('box-sub', this); updateFinance();" checked><span class="slider-toggle"></span></div>
             </label>
             <div id="box-sub" class="conditional-box active">
@@ -513,28 +488,28 @@
                     <label>Kwota Dotacji:</label>
                     <span class="val-display" id="val-sub" style="color:var(--primary);">16 000 zł</span>
                     <input type="range" id="sl-sub" min="0" max="16000" step="500" value="16000" oninput="markSubChanged();">
-                    <div class="alert-info" style="font-size: 0.75rem; margin-top:15px;">🔒 Limit: <span id="alert-sub-limit">16 000 zł</span></div>
+                    <div class="alert-info" style="font-size: 0.75rem; margin-top:15px;" id="alert-sub-info">🔒 Aieco automatycznie wylicza bezpieczną dotację. Limit dla Twojej kwoty to: <span id="val-limit-sub">16 000</span> zł.</div>
+                    <div class="alert-warn" style="font-size: 0.75rem; margin-top:10px; display:none;" id="alert-sub-netbilling">⚠️ <strong>Ważne:</strong> Ponieważ jesteś na starych zasadach (opusty), warunkiem otrzymania dotacji jest <strong>obowiązkowe przejście na system Net-billing</strong>. Aieco automatycznie uwzględni tę zmianę w wynikach.</div>
                 </div>
             </div>
 
             <label class="toggle-box" style="margin-top: 15px;">
-                <span>💰 Ulga Termomodernizacyjna</span>
+                <span>💰 Odliczam Ulgę Termomodernizacyjną</span>
                 <div class="switch"><input type="checkbox" id="toggle-tax" onchange="toggleBox('box-tax', this)" checked><span class="slider-toggle"></span></div>
             </label>
             <div id="box-tax" class="conditional-box active">
                 <div class="form-group" style="margin-bottom:0;">
-                    <label>Próg podatkowy:</label>
+                    <label>Określ swój próg podatkowy:</label>
                     <div class="choice-tiles">
-                        <div class="choice-tile active tax-tile" onclick="selectTax(this, 0.12)">12%</div>
-                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.19)">19%</div>
-                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.32)">32%</div>
+                        <div class="choice-tile active tax-tile" onclick="selectTax(this, 0.12)">12%<br><small>I próg</small></div>
+                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.19)">19%<br><small>Liniowy</small></div>
+                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.32)">32%<br><small>II próg</small></div>
                     </div>
                     <input type="hidden" id="tax-rate" value="0.12">
                  </div>
             </div>
         </div>
 
-        <div class="step-content" id="step-5">
         <div class="step-content" id="step-5">
             
             <div id="lead-gate" style="display: block; text-align: center;">
@@ -693,50 +668,85 @@
         <div class="footer-nav">
             <button type="button" id="btn-back" class="btn btn-prev" style="display: none;" onclick="goToStep(currentStep - 1)">Wstecz</button>
             <button type="button" id="btn-next" class="btn btn-next" style="display: none;" onclick="goToStep(currentStep + 1)">Dalej ➔</button>
-            <button type="button" id="btn-calc" class="btn btn-next" style="display: none;" onclick="goToStep(5)">Audyt ⚡</button>
+            <button type="button" id="btn-calc" class="btn btn-next" style="display: none;" onclick="goToStep(5)">Wynik Audytu ⚡</button>
         </div>
     </div>
 </div>
 
+<div id="print-report">
+    <div class="print-header">
+        <div class="logo-container">
+            <h1 style="font-size: 2.8rem; font-weight: 800; color: #334155 !important;">Aieco <span style="color: #10B981 !important;">⚡</span></h1>
+        </div>
+        <h2>PODSUMOWANIE AUDYTU OZE</h2>
+        <p>Wygenerowano: <span id="print-date"></span></p>
+    </div>
+
+    <div id="pdf-personalized-message" class="pdf-advisor-msg"></div>
+
+    <div class="pdf-advisor-msg" style="background: #FAFAF9 !important; border-left-color: #F59E0B !important;">
+        <h4 style="color: #B45309 !important; margin-top: 0; margin-bottom: 10px; font-size: 16px;">🔍 Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h4>
+        <p style="margin: 0 0 5px 0; font-size: 12px;"><strong>✖ Twój obecny problem (Tradycyjne zasady):</strong> W południe, kiedy słońce najmocniej świeci, energia oddawana jest do sieci po zaniżonych rynkowych stawkach (nierzadko poniżej 0,16 zł / kWh). Kiedy wracasz wieczorem z pracy i zapotrzebowanie jest największe (godziny 17:00 - 21:00), musisz odkupić energię od operatora za nawet 1,30 zł / kWh.</p>
+        <p style="margin: 10px 0 5px 0; font-size: 12px;"><strong>✔ Rozwiązanie z inteligentnym systemem EMS:</strong></p>
+        <ul style="font-size: 12px; margin-top: 0; padding-left: 20px;">
+            <li>Słońce ze środka dnia zasila w 100% Twój akumulator, a nie sieć za ułamek ceny.</li>
+            <li>W godzinach drogiego szczytu wieczornego (do 1,30 zł / kWh) zasilasz dom całkowicie darmową energią zmagazynowaną za dnia.</li>
+            <li>Latem: system sprzeda do sieci ewentualny nadmiar dopiero wieczorem, kiedy stawki na giełdzie są najwyższe (nawet ok. 1,05 zł).</li>
+            <li>Zimą: jeśli brakuje słońca, w nocy system wczytuje tani prąd (za ok. 0,61 zł), po to by oddać Ci go w najdroższym szczycie dnia!</li>
+        </ul>
+    </div>
+
+    <div class="print-section">
+        <h3>1. Profil Energetyczny i Proponowany System</h3>
+        <div class="print-grid">
+            <div>
+                <p>Średniodobowe zużycie (ZIMA): <strong id="pdf-daily-winter">-</strong></p>
+                <p>Średniodobowe zużycie (LATO): <strong id="pdf-daily-summer">-</strong></p>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 5px;">
+                    <span style="color: #475569 !important;">Zalecana Pojemność Magazynu:</span>
+                    <div style="text-align: right;">
+                        <strong id="pdf-rec-bat" style="color: #F59E0B !important;">-</strong><br>
+                        <span style="font-size: 10px; color: #10B981 !important;">*Na bazie profilu zimowego</span>
+                    </div>
+                </div>
+                <p>Moc Instalacji PV: <strong id="p-pv">-</strong></p>
+            </div>
+            <div>
+                <p>Model Falownika: <strong id="p-inv">-</strong></p>
+                <p>Wybrany Magazyn: <strong id="p-bat">-</strong></p>
+                <p>Zasilanie awaryjne (EPS): <strong id="p-backup">-</strong></p>
+                <p>Zarządzanie / Moduł: <strong id="p-logger" style="color: #10B981 !important;">-</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="print-section">
+        <h3>2. Analiza Ekonomiczna </h3>
+        <div class="print-grid-3">
+            <div>
+                <p>1 Rok</p>
+                <strong class="print-summary-val" id="p-roi">-</strong>
+            </div>
+            <div>
+                <p>5 Lat</p>
+                <strong class="print-summary-val" id="p-sav-5">-</strong>
+            </div>
+            <div>
+                <p>15 Lat</p>
+                <strong class="print-summary-val" id="p-total-sav">-</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="print-section" id="pdf-dynamic-recommendation-note" style="background: #FAFAFA !important; border-color: #10B981 !important; border-width: 2px !important;">
+    </div>
+
+    <div class="disclaimer">
+        <strong>NOTA PRAWNA I METODOLOGIA:</strong> Powyższa symulacja ma charakter analityczno-poglądowy. Wyliczenia bazują na profilach statystycznych zużycia, uśrednionych stawkach giełdowych RCEm oraz taryfach operatorów (OSD). Zestawienie uwzględnia zaawansowane algorytmy zarządzania systemem Aieco EMS, lecz <strong>nie stanowi oferty handlowej</strong> w rozumieniu art. 66 § 1 Kodeksu Cywilnego. Ostateczny dobór mocy, pojemności oraz precyzyjna wycena wymagają potwierdzenia podczas bezpłatnego audytu technicznego przeprowadzonego przez autoryzowanego doradcę.
+    </div>
+</div>
+
 <script>
-    // ═══ Google Sheets API ═══
-    const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxnRdF6nNJ8TRs25WqyzzFArOCwnCoHujCyS0wpjIdQ1cdaibQTMTQCk8nHc3a3zu3M/exec';
-
-    function sendLeadToSheets(email, phone) {
-        const TYPE_LABELS = {
-            'none': 'Brak PV - nowa instalacja', 'old_rules': 'Ma PV - stare zasady (net-metering)',
-            'new_rules': 'Ma PV - nowe zasady (net-billing)', 'only_bat': 'Tylko magazyn energii'
-        };
-        const getVal = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
-        const data = {
-            email, phone, timestamp: new Date().toLocaleString('pl-PL'), source: 'kalkulator-aieco',
-            typ_klienta: TYPE_LABELS[selectedType] || selectedType || 'nieznany',
-            obecna_moc_pv_kwp: getVal('sl-cur-pv','0'), obecny_falownik_kw: getVal('sl-cur-inv','0'),
-            typ_falownika: getVal('cur-inv-type',''), docelowa_moc_pv_kwp: getVal('sl-target-pv','0'),
-            nowa_moc_pv_kwp: getVal('sl-new-pv','0'), kierunek_pv: getVal('pv-direction','south'),
-            moc_przylacza_kw: getVal('sl-conn','15'), operator: getVal('cur-operator',''),
-            taryfa_obecna: getVal('cur-tariff',''), zasady_rozliczen: getVal('cur-rules',''),
-            tryb_wprowadzania: inputMode, zuzycie_roczne_kwh: getVal('sl-cons','0'),
-            rachunek_miesieczny_zl: getVal('sl-bill','0'), zuzycie_pompa_kwh: getVal('sl-hp-cons','0'),
-            zuzycie_ev_kwh: getVal('sl-ev-cons','0'), profil_zuzycia: getVal('usage-profile',''),
-            strategia_zimowa: getVal('winter-strategy',''), backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
-            rozbudowa_pv: document.getElementById('toggle-expand-pv')?.checked ? 'Tak' : 'Nie',
-            ma_pompe_ciepla: document.getElementById('toggle-hp')?.checked ? 'Tak' : 'Nie',
-            ma_auto_ev: document.getElementById('toggle-ev')?.checked ? 'Tak' : 'Nie',
-            taryfa_docelowa: getVal('target-tariff',''),
-            chce_dofinansowanie: document.getElementById('toggle-sub')?.checked ? 'Tak' : 'Nie',
-            dofinansowanie_zl: getVal('sl-sub','0'),
-            jest_podatnikiem: document.getElementById('toggle-tax')?.checked ? 'Tak' : 'Nie',
-            stawka_podatkowa: getVal('tax-rate','0.12')
-        };
-        const params = new URLSearchParams();
-        Object.entries(data).forEach(([k,v]) => params.append(k,v));
-        fetch(GOOGLE_SHEETS_API_URL + '?' + params.toString(), {
-            method: 'POST', mode: 'no-cors',
-            headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
-        }).then(() => console.log('✅ Lead wysłany')).catch(e => console.warn('⚠️', e.message));
-    }
-
     // Narzędzie zabezpieczające modyfikacje DOM
     const setDisplay = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
     const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
@@ -1106,22 +1116,16 @@
         requiredInvPower = requiredInvPower * 1.2;
         
         if (selectedType === 'only_bat') {
-            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)";
-        } else if (isSolis) {
-            // Solis zawsze wymaga własnego falownika hybrydowego
-            // Minimalnie 8kW HV — dobieramy na podstawie mocy PV
-            let solisMinPower = Math.max(requiredInvPower, 8);
-            let matchedInv = invList.find(i => i.p >= solisMinPower) || invList[invList.length - 1];
-            matchedInvName = `Wymiana na: ${matchedInv.name}`;
-        } else if (selectedType === 'none' || addedPV > 0 || isString) {
+            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)"; 
+         } else if (selectedType === 'none' || addedPV > 0 || isString) {
             let matchedInv = invList.find(i => i.p >= requiredInvPower) || invList[invList.length - 1];
             if (isString && addedPV === 0) {
                 matchedInvName = `Wymiana na: ${matchedInv.name}`;
-            } else {
+             } else {
                 matchedInvName = matchedInv.name;
-            }
+             }
         } else {
-            matchedInvName = "Istniejący Falownik Hybrydowy";
+            matchedInvName = "Istniejący Falownik Hybrydowy"; 
         }
 
         let retailPrice = 0; 
@@ -1206,6 +1210,56 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     
+
+    const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxnRdF6nNJ8TRs25WqyzzFArOCwnCoHujCyS0wpjIdQ1cdaibQTMTQCk8nHc3a3zu3M/exec';
+
+    function sendLeadToSheets(email, phone) {
+        const TYPE_LABELS = {
+            'none': 'Brak PV - nowa instalacja', 'old_rules': 'Ma PV - stare zasady (net-metering)',
+            'new_rules': 'Ma PV - nowe zasady (net-billing)', 'only_bat': 'Tylko magazyn energii'
+        };
+        const getVal = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
+        const data = {
+            email, phone,
+            timestamp: new Date().toLocaleString('pl-PL'),
+            source: 'kalkulator-aieco',
+            typ_klienta: TYPE_LABELS[selectedType] || selectedType || 'nieznany',
+            obecna_moc_pv_kwp: getVal('sl-cur-pv','0'),
+            obecny_falownik_kw: getVal('sl-cur-inv','0'),
+            typ_falownika: getVal('cur-inv-type',''),
+            docelowa_moc_pv_kwp: getVal('sl-target-pv','0'),
+            nowa_moc_pv_kwp: getVal('sl-new-pv','0'),
+            kierunek_pv: getVal('pv-direction','south'),
+            moc_przylacza_kw: getVal('sl-conn','15'),
+            operator: getVal('cur-operator',''),
+            taryfa_obecna: getVal('cur-tariff',''),
+            zasady_rozliczen: getVal('cur-rules',''),
+            tryb_wprowadzania: inputMode,
+            zuzycie_roczne_kwh: getVal('sl-cons','0'),
+            rachunek_miesieczny_zl: getVal('sl-bill','0'),
+            zuzycie_pompa_kwh: getVal('sl-hp-cons','0'),
+            zuzycie_ev_kwh: getVal('sl-ev-cons','0'),
+            profil_zuzycia: getVal('usage-profile',''),
+            strategia_zimowa: getVal('winter-strategy',''),
+            backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
+            rozbudowa_pv: document.getElementById('toggle-expand-pv')?.checked ? 'Tak' : 'Nie',
+            ma_pompe_ciepla: document.getElementById('toggle-hp')?.checked ? 'Tak' : 'Nie',
+            ma_auto_ev: document.getElementById('toggle-ev')?.checked ? 'Tak' : 'Nie',
+            taryfa_docelowa: getVal('target-tariff',''),
+            chce_dofinansowanie: document.getElementById('toggle-sub')?.checked ? 'Tak' : 'Nie',
+            dofinansowanie_zl: getVal('sl-sub','0'),
+            jest_podatnikiem: document.getElementById('toggle-tax')?.checked ? 'Tak' : 'Nie',
+            stawka_podatkowa: getVal('tax-rate','0.12')
+        };
+        const params = new URLSearchParams();
+        Object.entries(data).forEach(([k,v]) => params.append(k, v));
+        fetch(GOOGLE_SHEETS_API_URL + '?' + params.toString(), {
+            method: 'POST', mode: 'no-cors',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(() => console.log('✅ Lead wysłany do arkusza')).catch(e => console.warn('⚠️ Błąd wysyłki:', e.message));
+    }
+
     function unlockResults() {
         const email = document.getElementById('lead-email').value;
         const phone = document.getElementById('lead-phone').value;
