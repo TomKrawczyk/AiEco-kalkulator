@@ -836,9 +836,16 @@
             strategia_zimowa: getVal('winter-strategy', ''),
             backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
 
+            // checkboxy toggle
+            rozbudowa_pv: document.getElementById('toggle-expand-pv') && document.getElementById('toggle-expand-pv').checked ? 'Tak' : 'Nie',
+            ma_pompe_ciepla: document.getElementById('toggle-hp') && document.getElementById('toggle-hp').checked ? 'Tak' : 'Nie',
+            ma_auto_ev: document.getElementById('toggle-ev') && document.getElementById('toggle-ev').checked ? 'Tak' : 'Nie',
+
             // Krok 4 - finanse
             taryfa_docelowa: getVal('target-tariff', ''),
+            chce_dofinansowanie: document.getElementById('toggle-sub') && document.getElementById('toggle-sub').checked ? 'Tak' : 'Nie',
             dofinansowanie_zl: getVal('sl-sub', '0'),
+            jest_podatnikiem: document.getElementById('toggle-tax') && document.getElementById('toggle-tax').checked ? 'Tak' : 'Nie',
             stawka_podatkowa: getVal('tax-rate', '0.12')
         };
 
