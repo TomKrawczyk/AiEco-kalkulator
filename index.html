@@ -584,7 +584,13 @@
                 <div class="summary-section" style="border: 1px solid var(--accent-blue); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
                     <h4 style="color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-top:0;">WYBIERZ POJEMNOŚĆ MAGAZYNU ENERGII</h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Zwiększenie magazynu poszerza możliwości zysku na tarczy RCE. Kliknij na kafelek poniżej, aby sprawdzić inne opcje.</p>
-                    <div id="bat-variants-grid" style="width:100%;"></div>
+                    <!-- Opcja 1: 4ECO -->
+                    <p style="color:var(--primary); font-weight:700; margin:0 0 12px 0; font-size:1rem;">⚡ Opcja 1: System 4ECO</p>
+                    <div id="bat-variants-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; margin-bottom:24px;"></div>
+
+                    <!-- Opcja 2: Solis -->
+                    <p style="color:var(--accent-blue); font-weight:700; margin:0 0 12px 0; font-size:1rem;">⚡ Opcja 2: System Solis</p>
+                    <div id="solis-variants-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;"></div>
                 </div>
 
                 <!-- SPECYFIKACJA SYSTEMU -->
@@ -659,24 +665,45 @@
 </div>
 
 <script>
-    // NOWE: Konfiguracja Google Sheets
-    const GOOGLE_SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbyZxGfNqhdP1LQZt-_IH26HHYgh6H9IMKFbrGdtJaw0zSO3JXatD_RUip63cWCQ0Vw_/exec"; // Zmień na swój URL!
-    
-    // Modals
-    function showErrorModal(message) {
-        document.getElementById('errorMessage').textContent = message;
-        document.getElementById('errorModal').classList.add('show');
+    // ═══ Google Sheets API ═══
+    const GOOGLE_SHEETS_API_URL = 'https://script.google.com/macros/s/AKfycbxsMJgJAAnWm6JTrRdIEV62iCZCl5pn6GQ0jM0gYLqp7fG3x3xV0K0V_mKgaB-H5Sn3/exec';
+
+    function sendLeadToSheets(email, phone) {
+        const TYPE_LABELS = {
+            'none': 'Brak PV - nowa instalacja', 'old_rules': 'Ma PV - stare zasady (net-metering)',
+            'new_rules': 'Ma PV - nowe zasady (net-billing)', 'only_bat': 'Tylko magazyn energii'
+        };
+        const getVal = (id, def) => { const el = document.getElementById(id); return el ? el.value : def; };
+        const data = {
+            email, phone, timestamp: new Date().toLocaleString('pl-PL'), source: 'kalkulator-aieco',
+            typ_klienta: TYPE_LABELS[selectedType] || selectedType || 'nieznany',
+            obecna_moc_pv_kwp: getVal('sl-cur-pv','0'), obecny_falownik_kw: getVal('sl-cur-inv','0'),
+            typ_falownika: getVal('cur-inv-type',''), docelowa_moc_pv_kwp: getVal('sl-target-pv','0'),
+            nowa_moc_pv_kwp: getVal('sl-new-pv','0'), kierunek_pv: getVal('pv-direction','south'),
+            moc_przylacza_kw: getVal('sl-conn','15'), operator: getVal('cur-operator',''),
+            taryfa_obecna: getVal('cur-tariff',''), zasady_rozliczen: getVal('cur-rules',''),
+            tryb_wprowadzania: inputMode, zuzycie_roczne_kwh: getVal('sl-cons','0'),
+            rachunek_miesieczny_zl: getVal('sl-bill','0'), zuzycie_pompa_kwh: getVal('sl-hp-cons','0'),
+            zuzycie_ev_kwh: getVal('sl-ev-cons','0'), profil_zuzycia: getVal('usage-profile',''),
+            strategia_zimowa: getVal('winter-strategy',''), backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
+            rozbudowa_pv: document.getElementById('toggle-expand-pv')?.checked ? 'Tak' : 'Nie',
+            ma_pompe_ciepla: document.getElementById('toggle-hp')?.checked ? 'Tak' : 'Nie',
+            ma_auto_ev: document.getElementById('toggle-ev')?.checked ? 'Tak' : 'Nie',
+            taryfa_docelowa: getVal('target-tariff',''),
+            chce_dofinansowanie: document.getElementById('toggle-sub')?.checked ? 'Tak' : 'Nie',
+            dofinansowanie_zl: getVal('sl-sub','0'),
+            jest_podatnikiem: document.getElementById('toggle-tax')?.checked ? 'Tak' : 'Nie',
+            stawka_podatkowa: getVal('tax-rate','0.12')
+        };
+        const params = new URLSearchParams();
+        Object.entries(data).forEach(([k,v]) => params.append(k,v));
+        fetch(GOOGLE_SHEETS_API_URL + '?' + params.toString(), {
+            method: 'POST', mode: 'no-cors',
+            headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+        }).then(() => console.log('✅ Lead wysłany')).catch(e => console.warn('⚠️', e.message));
     }
 
-    function closeErrorModal() {
-        document.getElementById('errorModal').classList.remove('show');
-    }
-
-    function closeSuccessModal() {
-        document.getElementById('successModal').classList.remove('show');
-    }
-
-    // Narzędzia DOM
+    // Narzędzie zabezpieczające modyfikacje DOM
     const setDisplay = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
     const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
     const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
@@ -687,7 +714,11 @@
     let inputMode = 'kwh';
     let subManuallyChanged = false;
     let wantsBackup = false;
+    let currentNetInvest = 0;
+    let currentMonthlySavings = 0;
+    let userForcedBatCap = null;
     let isUnlocked = false;
+    
     let currentBrand = '4eco';
 
     const PRICE_LIST = {
@@ -707,447 +738,107 @@
             { cap: 15, price: 8540, name: "SE15B" },
             { cap: 16, price: 9520, name: "SE16B PRO" },
             { cap: 20, price: 14812, name: "2x SE10B" },
-            { cap: 25, price: 15946, name: "SE10B+SE15B" },
-            { cap: 30, price: 17080, name: "2x SE15B" }
+            { cap: 25, price: 15946, name: "SE10B + SE15B" },
+            { cap: 30, price: 17080, name: "2x SE15B" },
+            { cap: 32, price: 19040, name: "2x SE16B PRO" }
+        ],
+        solis_inv: [
+            { p: 0, price: 0, name: "Brak" },
+            { p: 5, price: 3350, name: "Solis 5kW HV" },
+            { p: 8, price: 3500, name: "Solis 8kW HV" },
+            { p: 10, price: 3650, name: "Solis 10kW HV" },
+            { p: 12, price: 5700, name: "Solis 12kW LV" } 
+        ],
+        solis_bat: [
+            { cap: 0, price: 0, name: "Brak" },
+            { cap: 5, price: 6650, name: "SunESS-H 5kWh" },
+            { cap: 10, price: 9950, name: "SunESS-H 10kWh" },
+            { cap: 15, price: 13250, name: "SunESS-H 15kWh" },
+            { cap: 20, price: 16550, name: "SunESS-H 20kWh" },
+            { cap: 25, price: 16550 + 6650, name: "SunESS-H 25kWh" }, 
+            { cap: 30, price: 16550 + 9950, name: "SunESS-H 30kWh" }  
         ]
-    };
+     };
 
     function formatNum(val) { return Math.round(val || 0).toLocaleString('pl-PL') + " zł"; }
 
     function updateVal(sId, dId, suf, formatNumber = false) {
-        let v = document.getElementById(sId).value;
-        setText(dId, (formatNumber ? Number(v).toLocaleString('pl-PL') : v) + suf);
-    }
+         let v = document.getElementById(sId).value;
+         setText(dId, (formatNumber ? Number(v).toLocaleString('pl-PL') : v) + suf);
+     }
 
     function updateAutoVal(sId, dId, suf) {
-        let v = document.getElementById(sId).value;
-        setText(dId, v == 0 ? "Auto" : v + suf);
-    }
+         let v = document.getElementById(sId).value;
+         setText(dId, v == 0 ? "Auto" : v + suf);
+     }
 
     function toggleBox(bId, c) {
-        const box = document.getElementById(bId);
-        if(c && c.checked !== undefined) {
-            if(c.checked) {
-                if(box) box.classList.add('active');
-                if(bId === 'box-sub') updateFinance();
-            } else {
-                if(box) box.classList.remove('active');
-            }
-        } else {
-            if(box) box.classList.toggle('active');
-        }
-    }
+         const box = document.getElementById(bId);
+         if(c && c.checked !== undefined) {
+            if(c.checked){
+                 if(box) box.classList.add('active');
+                 if(bId === 'box-sub') updateFinance();
+             } else {
+                 if(box) box.classList.remove('active');
+             }
+         } else {
+             if(box) box.classList.toggle('active');
+         }
+     }
 
-    function goToStep(step) {
-        if(step < 1 || step > totalSteps) return;
-        
-        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.step-circle').forEach(el => el.classList.remove('active', 'completed'));
-        
-        document.getElementById('step-' + step).classList.add('active');
-        document.querySelector('[data-step="' + step + '"]').classList.add('active');
-        
-        for(let i = 1; i < step; i++) {
-            document.querySelector('[data-step="' + i + '"]').classList.add('completed');
-        }
-        
-        const progress = ((step - 1) / (totalSteps - 1)) * 100;
-        document.getElementById('progress-bar').style.width = progress + '%';
-        
-        document.getElementById('btn-back').style.display = step === 1 ? 'none' : 'block';
-        document.getElementById('btn-next').style.display = (step < 4) ? 'block' : 'none';
-        document.getElementById('btn-calc').style.display = (step === 4) ? 'block' : 'none';
-        
-        currentStep = step;
-        window.scrollTo(0, 0);
-    }
+    function checkInvType() {
+         setDisplay('retrofit-info', document.getElementById('cur-inv-type').value === 'string' ? 'block' : 'none');
+     }
 
-    function selectType(el, type) {
-        selectedType = type;
-        document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
-        el.classList.add('selected');
-        
-        if(type === 'none' || type === 'only_bat') {
-            setDisplay('tech-existing-pv', 'none');
-            setDisplay('tech-new-pv', 'block');
-        } else {
-            setDisplay('tech-existing-pv', 'block');
-            setDisplay('tech-new-pv', 'none');
-        }
-
-        if(type === 'only_bat') {
-            setDisplay('pv-dir-container', 'none');
-        } else {
-            setDisplay('pv-dir-container', 'block');
-        }
-        
-        setTimeout(() => goToStep(2), 300);
-    }
-
-    function unlockResults() {
-        const email = document.getElementById('lead-email').value;
-        const phone = document.getElementById('lead-phone').value;
-
-        if(!email || !phone) {
-            showErrorModal('Proszę wpisać e-mail i telefon!');
-            return;
-        }
-
-        if(!email.includes('@')) {
-            showErrorModal('Podaj prawidłowy e-mail!');
-            return;
-        }
-
-        isUnlocked = true;
-        setDisplay('lead-gate', 'none');
-        setDisplay('audit-results', 'block');
-        
-        // Generuj wyniki
-        generateResults();
-        
-        // Automatycznie wyślij lead do Google Sheets
-        sendLeadToSheets(email, phone);
-    }
-
-    function generateResults() {
-        try {
-            // ═══ DANE WEJŚCIOWE ═══
-            const cons      = parseFloat(getVal('sl-cons', '4000')) || 4000;   // kWh/rok
-            const bill      = parseFloat(getVal('sl-bill', '400'))  || 400;    // zł/mc
-            const pvCur     = parseFloat(getVal('sl-cur-pv', '0'))  || 0;      // kWp obecna
-            const pvNew     = parseFloat(getVal('sl-new-pv', '0'))  || 0;      // kWp nowa
-            const pvTarget  = parseFloat(getVal('sl-target-pv','0'))|| 0;      // kWp docelowa
-            const pvTotal   = pvCur > 0 ? (pvTarget > pvCur ? pvTarget : pvCur) : pvNew;
-            const hpCons    = parseFloat(getVal('sl-hp-cons', '0')) || 0;
-            const evCons    = parseFloat(getVal('sl-ev-cons', '0')) || 0;
-            const hasHP     = document.getElementById('toggle-hp')?.checked || false;
-            const hasEV     = document.getElementById('toggle-ev')?.checked || false;
-            const profile   = getVal('usage-profile','standard');
-            const direction = getVal('pv-direction','south');
-            const tariff    = getVal('target-tariff','g12');
-            const invType   = getVal('cur-inv-type','string');
-            const subAmt    = parseFloat(getVal('sl-sub','16000')) || 0;
-            const taxRate   = parseFloat(getVal('tax-rate','0.12')) || 0.12;
-            const isB2B     = taxRate === 0;
-
-            // ═══ ŁĄCZNE ZUŻYCIE ═══
-            const totalCons = cons + (hasHP ? hpCons : 0) + (hasEV ? evCons : 0);
-
-            // ═══ PROFIL AUTOKONSUMPCJI ═══
-            const autoRate = profile === 'home' ? 0.45 : profile === 'remote' ? 0.35 : 0.20;
-
-            // ═══ KOREKCJA KIERUNKU ═══
-            const dirFactor = direction === 'south' ? 1.0 : direction === 'ew' ? 0.88 : 0.80;
-
-            // ═══ PODZIAŁ SEZONOWY ═══
-            const winterShare = hasHP ? 0.80 : 0.55;
-            const summerShare = 1 - winterShare;
-            const winterDaily = (totalCons * winterShare) / 180;
-            const summerDaily = (totalCons * summerShare) / 185;
-
-            // ═══ REKOMENDOWANA POJEMNOŚĆ MAGAZYNU ═══
-            // Pokryć szczyt wieczorny zimą (7h × winterDaily/24)
-            const peakHours = 7;
-            const batNeeded = Math.ceil((winterDaily * peakHours / 24) / 5) * 5; // zaokr. do 5
-            const recBat    = Math.max(10, Math.min(30, batNeeded));
-
-            // ═══ MOC PV ═══
-            const pvSuggested = pvTotal > 0 ? pvTotal : Math.ceil((totalCons / (1100 * 0.82)) * 10) / 10;
-            const pvExpandStr = (pvCur > 0 && pvTarget > pvCur)
-                ? `${pvTarget} kWp (+${(pvTarget - pvCur).toFixed(1)} kWp rozbudowa)`
-                : `${pvSuggested.toFixed(1)} kWp`;
-
-            // ═══ FALOWNIK ═══
-            const needsHybrid = invType === 'string' || invType === '';
-            const invName = needsHybrid
-                ? (pvSuggested <= 6 ? 'HESP 6' : pvSuggested <= 8 ? 'HESP 8' : 'HESP 10')
-                : 'Falownik hybrydowy (istniejący)';
-            const invNote = needsHybrid ? '*Zoptymalizowano pod kątem orientacji i magazynu' : '';
-
-            // ═══ SYSTEM MAGAZYNU ═══
-            const batVariants4ECO = [
-                {kwh:10, model:'SE10B',        label:'4ECO'},
-                {kwh:15, model:'SE15B',        label:'4ECO'},
-                {kwh:16, model:'SE16B PRO',    label:'4ECO'},
-                {kwh:20, model:'2x SE10B',     label:'4ECO'},
-                {kwh:25, model:'SE10B + SE15B',label:'4ECO'},
-                {kwh:30, model:'2x SE15B',     label:'4ECO'},
-            ];
-            const batVariantsSolis = [
-                {kwh:10, model:'SunESS-H 10kWh', label:'Solis'},
-                {kwh:15, model:'SunESS-H 15kWh', label:'Solis'},
-                {kwh:20, model:'SunESS-H 20kWh', label:'Solis'},
-                {kwh:25, model:'SunESS-H 25kWh', label:'Solis'},
-                {kwh:30, model:'SunESS-H 30kWh', label:'Solis'},
-            ];
-
-            // ═══ EKONOMIA ═══
-            // Ceny energii
-            const buyPrice   = 1.09;  // zł/kWh kupno ze sieci
-            const peakPrice  = 1.30;  // zł/kWh szczyt G12
-            const rcePrice   = 0.16;  // zł/kWh RCE oddawanie
-            const nightPrice = 0.61;  // zł/kWh G12 noc
-            const arbProfit  = 0.44;  // zł/kWh zysk z arbitrażu
-            const inflation  = 0.04;
-
-            // Produkcja roczna PV
-            const pvProd = pvSuggested * 1100 * 0.82 * dirFactor;
-
-            // Autokonsumpcja
-            const autoUsed = Math.min(pvProd * autoRate, totalCons);
-            const autoSav  = autoUsed * buyPrice;
-
-            // Nadwyżka → magazyn / RCE
-            const surplus  = pvProd - autoUsed;
-            const batUsed  = Math.min(surplus, recBat * 180); // lato: 180 cykli
-            const batSav   = batUsed * peakPrice;
-            const rceSurp  = Math.max(0, surplus - batUsed);
-            const rceSav   = rceSurp * rcePrice;
-
-            // Arbitraż letni
-            const arbSav = batUsed * arbProfit;
-
-            // Tarcza zimowa G12
-            const winterPeakNeed = winterDaily * peakHours / 24 * 180;
-            const shieldSav = tariff === 'g12' ? Math.min(recBat * 180, winterPeakNeed) * (peakPrice - nightPrice) : 0;
-
-            // Obecny rachunek
-            const currentBillYear = bill > 0 ? bill * 12 : totalCons * buyPrice * 1.1;
-
-            // Koszty subskrypcji EMS
-            const emsCost = recBat * 2 * 12; // 4ECO: 2 zł/mc/kWh
-
-            // Całkowite oszczędności rok 1
-            const sav1Raw = autoSav + batSav + arbSav + shieldSav - emsCost;
-            const sav1 = Math.max(0, sav1Raw);
-
-            // Nowy rachunek
-            const fixedCosts = 400; // opłaty stałe
-            const newBill = Math.max(fixedCosts, currentBillYear - sav1);
-
-            // 5 i 15 lat z inflacją
-            let sav5 = 0, sav15 = 0, savN = sav1;
-            for(let i = 1; i <= 15; i++) {
-                savN *= (1 + inflation);
-                if(i <= 5)  sav5  += savN;
-                if(i <= 15) sav15 += savN;
-            }
-            sav5 = sav5 + sav1;
-
-            // ═══ FORMAT LICZB ═══
-            const fmt = n => Math.round(n).toLocaleString('pl-PL') + ' zł';
-
-            // ═══ UZUPEŁNIJ UI ═══
-            setText('res-daily-winter', winterDaily.toFixed(1) + ' kWh / dobę');
-            setText('res-daily-summer', summerDaily.toFixed(1) + ' kWh / dobę');
-            setText('res-rec-bat',      recBat + ' kWh');
-            setText('res-pv',           pvExpandStr);
-            setText('res-inv',          invName);
-            setText('res-bat',          `SE${recBat}B (${recBat} kWh)`);
-            setText('res-backup',       wantsBackup ? 'Tak (EPS)' : 'Nie');
-            setText('res-module',       'Inteligentny Logger Wi-Fi (Moduł EMS)');
-            setText('res-tariff',       tariff === 'g12' ? 'G12 + RCE' : tariff.toUpperCase() + ' + RCE');
-            setText('res-sav-1',        fmt(sav1));
-            setText('res-sav-5',        fmt(sav5));
-            setText('res-sav-15',       fmt(sav15));
-
-            setHtml('res-bat-desc', `Na podstawie wyliczonego zapotrzebowania zimowego, nasz system w tle zaproponował optymalny bufor magazynowy. Ta pojemność zapewni Ci pełne zasilanie w najdroższych godzinach szczytowych bez konieczności dobierania drogiego prądu z sieci.`);
-
-            setText('res-optimization-text',
-                `Dzisiaj proponujemy Ci magazyn energii o pojemności ${recBat} kWh. Należy jednak pamiętać, że całkowite i w 100% precyzyjne zbilansowanie systemu do poziomu najniższych możliwych rachunków będziemy w stanie określić po pierwszym sezonie użytkowania. System Aieco (EMS) na bieżąco uczy się Twojego profilu i zbiera realne dane pomiarowe z Twojej instalacji. Po pełnym roku będziemy mogli z całkowitą pewnością stwierdzić, czy np. Twoje potrzeby się zmieniły i czy warto rozbudować magazyn o dodatkowe moduły.`
-            );
-
-            // ═══ PERSONALIZED MESSAGE ═══
-            setHtml('personalized-message', `
-                <p style="margin:0 0 12px 0;">Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${fmt(currentBillYear)}</strong> rocznie.</p>
-                <p style="margin:0;">Dzięki naszej instalacji z inteligentnym magazynem, Twój nowy rachunek spadnie do zaledwie <span style="color:var(--primary); font-weight:700;">${fmt(newBill)}</span> rocznie! A dodatkowo wygenerujesz <span style="color:var(--primary); font-weight:700;">${fmt(rceSurp * rcePrice + arbSav)}</span> zł rocznej nadwyżki z RCE!`
-            );
-
-            // ═══ SEKCJA ANALIZA (dynamiczna, bez rosyjskiego) ═══
-            setHtml('personalized-message', `
-                <p style="font-size:1.05rem; margin:0 0 12px 0;">Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${fmt(currentBillYear)}</strong> rocznie.</p>
-                <p style="font-size:1.05rem; margin:0 0 20px 0;">Dzięki naszej instalacji z inteligentnym magazynem, Twój nowy rachunek spadnie do zaledwie <span style="color:var(--primary); font-weight:800; font-size:1.1rem;">${fmt(newBill)}</span> rocznie! A dodatkowo wygenerujesz <span style="color:var(--primary); font-weight:800;">${fmt(rceSurp * rcePrice + arbSav)}</span> zł rocznej nadwyżki z RCE!</p>
-                <div style="background:var(--bg-dark); border-left:4px solid #F59E0B; border-radius:8px; padding:18px; margin-top:5px;">
-                    <h4 style="color:#F59E0B; margin:0 0 12px 0; font-size:1rem;">🔍 Analiza: Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h4>
-                    <p style="margin:0 0 8px 0;"><strong style="color:#FCA5A5;">✗ Twój obecny problem (Zwykła fotowoltaika):</strong></p>
-                    <p style="font-size:0.88rem; color:var(--text-muted); margin:0 0 14px 0;">W godzinach południowych (zazwyczaj 11:00 – 14:00), gdy Twoje panele produkują najwięcej prądu, energia nie jest na bieżąco zużywana w domu. Jest &quot;wypychana&quot; do sieci po drastycznie niskich, rynkowych stawkach RCE (spadających często poniżej <strong>0,16 zł / kWh</strong>, a czasem nawet do zera!). Wieczorem (17:00 – 21:00), gdy wracasz do domu, włączasz TV, pralkę i oświetlenie – panele już nie produkują. Musisz odkupić energię od operatora w najdroższym możliwym momencie, płacąc nawet do <strong>1,30 zł / kWh</strong>. System systematycznie pomniejsza Twoje oszczędności.</p>
-                    <p style="margin:0 0 8px 0;"><strong style="color:var(--primary);">✓ Rozwiązanie: Inteligentny magazyn Aieco (EMS)</strong></p>
-                    <ul style="font-size:0.88rem; color:var(--text-muted); padding-left:20px; margin:0; line-height:1.8;">
-                        <li><strong style="color:#fff;">Blokada taniej sprzedaży:</strong> W południe nadwyżka ze słońca nie trafia już do sieci za "grosze". Zamiast tego całkowicie ładuje Twój magazyn energii.</li>
-                        <li><strong style="color:#fff;">Darmowy prąd wieczorem:</strong> Od 17:00 do 22:00 Twój dom odłącza się od drogiej sieci. Omijasz wysoką stawkę <strong>1,30 zł / kWh</strong> i zasilasz dom w 100% ze zmagazynowaną darmową energią.</li>
-                        <li><strong style="color:#fff;">Aktywny handel (Letni Arbitraż):</strong> Gdy bateria jest pełna w słoneczny dzień, system wstrzymuje się z eksportem do sieci. Czeka na wieczorne piki cen na giełdzie, by automatycznie sprzedać prąd za najwyższą kwotę (nawet 1,05 zł / kWh).</li>
-                        <li><strong style="color:#fff;">Zimowa Tarcza (Taryfa G12):</strong> Gdy zimą słońca jest mało, sztuczna inteligencja o godzinie 01:00 w nocy pobiera tani prąd (za ok. <strong>0,61 zł</strong>). Wieczorem używa go w domu, więc nie kupujesz w ogóle prądu w drogich szczytach!</li>
-                    </ul>
-                </div>
-            `);
-
-            // ═══ GRID MAGAZYNÓW ═══
-            // Zapisz dane do globalnych zmiennych żeby selectBattery() mogło z nich korzystać
-            window._calcData = { recBat, arbProfit, pvSuggested, pvExpandStr, invName, pvCur, pvTarget, pvNew,
-                tariff, sav1, sav5, sav15, currentBillYear, newBill, rceSurp, rcePrice, arbSav,
-                batVariants4ECO, batVariantsSolis, emsCost };
-
-            renderBatteryGrid(recBat, '4eco', arbProfit, batVariants4ECO, batVariantsSolis,
-                pvExpandStr, invName, tariff, sav1, sav5, sav15);
-
-            // ═══ MATH EXPLAINER ═══
-            const me = document.getElementById('math-explainer-content');
-            if(me) me.innerHTML = `
-                <p>Algorytm analityczny bazuje na historycznych profilach zużycia OSD oraz uśrednionych stawkach giełdowych RCEm i taryfach strefowych G12/G12w. Wykorzystujemy modelowanie różnicowe (zima/lato), aby precyzyjnie zasymulować pracę algorytmów sztucznej inteligencji Aieco EMS.</p>
-                <h4 style="color:var(--primary);">🗓️ 1. PODZIAŁ SEZONOWY I PROFILOWANIE (ZIMA VS LATO)</h4>
-                <ul><li>Zapotrzebowanie dzielone jest na 185 dni okresu letniego (produkcyjnego) oraz 180 dni okresu grzewczego (zimowego).</li>
-                <li>Jeśli obiekt posiada pompę ciepłą, krzywa obciążenia przesuwa się drastycznie: aż 80% rocznego zużycia przypisywane jest na miesiące zimowe, co determinuje wymaganą pojemność magazynu.</li></ul>
-                <h4 style="color:var(--accent-blue);">🔄 2. AUTOKONSUMPCJA (BIEŻĄCE ZUŻYCIE)</h4>
-                <ul><li>Wyliczenia bazują na zadeklarowanym profilu życia: Praca poza domem = 20%, Praca zdalna = 35%, Smart Home (przesuwanie zużycia na godziny południowe) = 45%.</li>
-                <li>Autokonsumpcja jest potężnym generatorem oszczędności, ponieważ 1 kWh prądu użytego ze słońca na bieżąco to ominięcie kosztu dystrybucji ok. 1.09 zł – 1.30 zł. Energia niewykorzystana trafia najpierw do magazynu.</li></ul>
-                <h4 style="color:#F59E0B;">🌞 3. ARBITRAŻ LETNI (RCE)</h4>
-                <ul><li>Szacujemy letnią nadwyżkę w oparciu o wielkość PV oraz orientację względem słońca.</li>
-                <li>Nadwyżka w południe w 100% ładuje magazyn. To, co się "przeleje" (przy pełnej baterii), oddawane jest po niskiej stawce RCE (ok. 0.16 zł/kWh).</li>
-                <li>Niewykorzystana w ciągu dnia bateria ładuje się nocą w taniej taryfie i sprzedaje prąd w wieczornym szczycie giełdowym (zysk ok. 0.44 zł/kWh netto).</li></ul>
-                <h4 style="color:#60A5FA;">❄️ 4. TARCZA ZIMOWA (G12)</h4>
-                <ul><li>Szacujemy Twoje zużycie w godzinach drogiego szczytu G12 (15:00 – 22:00).</li>
-                <li>Algorytm dobiera magazyn na podstawie wyliczonego średniodobowego zapotrzebowania zimowego. Ewentualne braki zliczane są po karnej stawce szczytowej.</li></ul>
-                <h4 style="color:#34D399;">💰 5. KOSZTY I DOTACJE</h4>
-                <ul><li>Kalkulacja przewiduje 4-procentową inflację cen energii w ujęciu rocznym.</li>
-                <li>Rachunek w modelu Aieco zakłada <a href="#" style="color:var(--accent-blue);">opłaty stałe (abonamentowe)</a> w wysokości ok. 400 zł rocznie, niepodlegające pokryciu z wirtualnego depozytu (zgodnie z przepisami prawa energetycznego).</li>
-                <li>Wbudowany skrypt "Mój Prąd" restrykcyjnie weryfikuje minimalny warunek 10 kWh dla magazynu, dopasowując procentowy udział dotacji do kosztów kwalifikowanych.</li></ul>
-                <h4 style="color:#A78BFA;">🤖 6. AUTOMATYKA AIECO EMS (SSO)</h4>
-                <ul><li>Rozwiązania hybrydowe zintegrowane są z chmurą analityczną decydującą w czasie rzeczywistym o handlu energią.</li>
-                <li>Koszty utrzymania platformy: w wariancie 4ECO wyceniono je na 2 zł/mc za każdy 1 kWh pojemności baterii, w wariancie Solis jest to zryczałtowane 19,90 zł/mc. Opłaty zostały z góry <a href="#" style="color:var(--accent-blue);">odjęte od prezentowanych zysków</a> (model netto).</li></ul>
-            `;
-
-        } catch(e) {
-            showErrorModal('Błąd generowania wyników: ' + e.message);
-            console.error(e);
-        }
-    }
-
-    function getVal(id, def) {
-        const el = document.getElementById(id);
-        return el ? el.value : def;
-    }
-
-    const TYPE_LABELS = {
-        'none': 'Brak PV - nowa instalacja',
-        'old_rules': 'Ma PV - stare zasady (net-metering)',
-        'new_rules': 'Ma PV - nowe zasady (net-billing)',
-        'only_bat': 'Tylko magazyn energii'
-    };
-
-    function sendLeadToSheets(email, phone) {
-        const data = {
-            // Dane kontaktowe
-            email: email,
-            phone: phone,
-            timestamp: new Date().toLocaleString('pl-PL'),
-            source: 'kalkulator-aieco',
-
-            // Krok 1 - typ klienta
-            typ_klienta: TYPE_LABELS[selectedType] || selectedType || 'nieznany',
-
-            // Krok 2 - obecna/nowa instalacja
-            obecna_moc_pv_kwp: getVal('sl-cur-pv', '0'),
-            obecny_falownik_kw: getVal('sl-cur-inv', '0'),
-            typ_falownika: getVal('cur-inv-type', ''),
-            docelowa_moc_pv_kwp: getVal('sl-target-pv', '0'),
-            nowa_moc_pv_kwp: getVal('sl-new-pv', '0'),
-            kierunek_pv: getVal('pv-direction', 'south'),
-            moc_przylacza_kw: getVal('sl-conn', '15'),
-            operator: getVal('cur-operator', ''),
-            taryfa_obecna: getVal('cur-tariff', ''),
-            zasady_rozliczen: getVal('cur-rules', ''),
-
-            // Krok 3 - zużycie i potrzeby
-            tryb_wprowadzania: inputMode,
-            zuzycie_roczne_kwh: getVal('sl-cons', '0'),
-            rachunek_miesieczny_zl: getVal('sl-bill', '0'),
-            zuzycie_pompa_kwh: getVal('sl-hp-cons', '0'),
-            zuzycie_ev_kwh: getVal('sl-ev-cons', '0'),
-            profil_zuzycia: getVal('usage-profile', ''),
-            strategia_zimowa: getVal('winter-strategy', ''),
-            backup_awaryjny: wantsBackup ? 'Tak' : 'Nie',
-
-            // checkboxy toggle
-            rozbudowa_pv: document.getElementById('toggle-expand-pv') && document.getElementById('toggle-expand-pv').checked ? 'Tak' : 'Nie',
-            ma_pompe_ciepla: document.getElementById('toggle-hp') && document.getElementById('toggle-hp').checked ? 'Tak' : 'Nie',
-            ma_auto_ev: document.getElementById('toggle-ev') && document.getElementById('toggle-ev').checked ? 'Tak' : 'Nie',
-
-            // Krok 4 - finanse
-            taryfa_docelowa: getVal('target-tariff', ''),
-            chce_dofinansowanie: document.getElementById('toggle-sub') && document.getElementById('toggle-sub').checked ? 'Tak' : 'Nie',
-            dofinansowanie_zl: getVal('sl-sub', '0'),
-            jest_podatnikiem: document.getElementById('toggle-tax') && document.getElementById('toggle-tax').checked ? 'Tak' : 'Nie',
-            stawka_podatkowa: getVal('tax-rate', '0.12')
-        };
-
-        // Wysyłka przez URL params (WordPress-safe, omija CORS całkowicie)
-        const params = new URLSearchParams();
-        Object.entries(data).forEach(([k, v]) => params.append(k, v));
-
-        fetch(GOOGLE_SHEETS_API_URL + '?' + params.toString(), {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(() => {
-            console.log('✅ Lead wysłany do Google Sheets');
-        })
-        .catch(err => {
-            console.warn('⚠️ Błąd wysyłania leada:', err.message);
-        });
-    }
-
-    function exportToGoogleSheets() {
-        try {
-            const data = {
-                email: document.getElementById('lead-email').value,
-                phone: document.getElementById('lead-phone').value,
-                type: selectedType,
-                pvPower: document.getElementById('sl-new-pv')?.value || '0',
-                consumption: document.getElementById('sl-cons')?.value || '0',
-                timestamp: new Date().toLocaleString('pl-PL')
-            };
-
-            // CORS bypass via fetch POST
-            fetch(GOOGLE_SHEETS_API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(() => {
-                document.getElementById('successMessage').textContent = 'Dane wysłane do Google Sheets!';
-                document.getElementById('successModal').classList.add('show');
-            })
-            .catch(err => {
-                showErrorModal('Błąd wysyłania: ' + err.message);
-            });
-        } catch(e) {
-            showErrorModal('Błąd: ' + e.message);
-        }
+    function setInputMode(mode) {
+        inputMode = mode;
+        const btnKwh = document.getElementById('btn-mode-kwh');
+        const btnBill = document.getElementById('btn-mode-bill');
+        if(btnKwh) btnKwh.classList.toggle('active', mode === 'kwh');
+        if(btnBill) btnBill.classList.toggle('active', mode === 'bill');
+        setDisplay('input-kwh', mode === 'kwh' ? 'block' : 'none');
+        setDisplay('input-bill', mode === 'bill' ? 'block' : 'none');
+        if(mode === 'bill') updateBillConversion();
     }
 
     function updateBillConversion() {
         const bill = parseFloat(document.getElementById('sl-bill').value) || 0;
+        let kwh = 0;
+        
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+        
+        let curPvEl = document.getElementById('sl-cur-pv');
+        let curPV = curPvEl ? parseFloat(curPvEl.value) || 0 : 0;
+        
+        if (selectedType === 'none' || selectedType === 'only_bat' || !selectedType) {
+            kwh = Math.max(0, ((bill * 12) - 400) / 1.09);
+        } else {
+            let netGridPurchaseKwh = Math.max(0, ((bill * 12) - 400) / 1.09);
+            let annualPvYield = curPV * 950;
+            let selfConsKwh = annualPvYield * selfConsRate;
+            let exportedKwh = annualPvYield - selfConsKwh;
+            let recoveredKwhValue = (selectedType === 'old_rules') ? (exportedKwh * 0.8) : (exportedKwh * 0.25);
+            kwh = netGridPurchaseKwh + selfConsKwh + recoveredKwhValue;
+        }
         setText('val-bill', bill + " zł");
-        setText('val-bill-kwh', `Szacowane ~${Math.round((bill * 12 - 400) / 1.09)} kWh/rok`);
+        setText('val-bill-kwh', `Szacowane roczne zużycie domowe: ~${Number(Math.round(kwh)).toLocaleString('pl-PL')} kWh`);
     }
 
-    function selectBackup(el, val) {
-        document.querySelectorAll('.choice-tile').forEach(x => {
-            if(x.parentNode === el.parentNode) x.classList.remove('active');
-        });
-        el.classList.add('active');
+    function selectBackup(element, val) {
+        let sibs = element.parentNode.children;
+        for(let i=0; i<sibs.length; i++) sibs[i].classList.remove('active');
+        element.classList.add('active');
         setDisplay('backup-info', val === 'info' ? 'block' : 'none');
         if(val !== 'info') wantsBackup = (val === 'yes');
     }
 
     function selectTax(el, rate) {
-        document.querySelectorAll('.tax-tile').forEach(x => x.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('tax-rate').value = rate;
-    }
+         document.querySelectorAll('.tax-tile').forEach(x => x.classList.remove('active'));
+         el.classList.add('active');
+         document.getElementById('tax-rate').value = rate;
+     }
 
     function selectPvDir(el, dir) {
         document.querySelectorAll('.pv-dir-tile').forEach(x => x.classList.remove('active'));
@@ -1159,6 +850,7 @@
         document.querySelectorAll('.usage-tile').forEach(x => x.classList.remove('active'));
         el.classList.add('active');
         document.getElementById('usage-profile').value = profile;
+        if(inputMode === 'bill') updateBillConversion();
     }
 
     function selectWinterStrategy(el, strat) {
@@ -1167,232 +859,630 @@
         document.getElementById('winter-strategy').value = strat;
     }
 
-    function renderBatteryGrid(selectedKwh, selectedBrand, arbProfit, variants4ECO, variantsSolis,
-                               pvExpandStr, invName, tariff, sav1, sav5, sav15) {
-
-        const fmt = n => Math.round(n).toLocaleString('pl-PL') + ' zł';
-
-        function buildCard(v, isSelected, brand, arbP) {
-            const dep = Math.round(v.kwh * arbP * 180);
-            const isBrand4 = brand === '4eco';
-            const accent = isBrand4 ? 'var(--primary)' : 'var(--accent-blue)';
-            const bgSel  = isBrand4 ? '#0A2E1A' : '#0A1A2E';
-            const badgeText  = isSelected ? (isBrand4 ? 'OBECNIE WYBRANY' : 'ZALECANY') : '+ NIEZALEŻNOŚĆ';
-            const badgeBg    = isSelected ? accent : '#1E3A5F';
-            const badgeColor = isSelected ? '#000' : accent;
-            return `<div class="bat-card${isSelected?' bat-card--active':''}"
-                        data-kwh="${v.kwh}" data-model="${v.model}" data-brand="${brand}"
-                        data-dep="${dep}"
-                        onclick="selectBattery(this, ${v.kwh}, '${v.model}', '${brand}', ${dep})"
-                        style="background:${isSelected?bgSel:'var(--bg-dark)'}; border:2px solid ${isSelected?accent:'var(--border-color)'}; border-radius:12px; padding:16px 12px; text-align:center; cursor:pointer; transition:all .2s;">
-                <span style="background:${badgeBg}; color:${badgeColor}; font-size:0.62rem; font-weight:700; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:8px; text-transform:uppercase;">${badgeText}</span>
-                <div style="font-size:1.5rem; font-weight:800; color:#fff; margin-bottom:2px;">${v.kwh} kWh</div>
-                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">${v.model}</div>
-                <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:8px;">Sprawdź na mailu</div>
-                <div style="border:1px dashed ${accent}; border-radius:6px; padding:5px 4px; font-size:0.85rem; color:${accent}; font-weight:700;">+ ${dep.toLocaleString('pl-PL')} zł Depozytu</div>
-            </div>`;
-        }
-
-        const grid = document.getElementById('bat-variants-grid');
-        if(!grid) return;
-
-        let html = '';
-
-        // ─── Opcja 1: 4ECO — pełna szerokość, 3 kolumny ───
-        html += `
-        <div style="margin-bottom:24px;">
-            <p style="color:var(--primary); font-weight:700; margin:0 0 12px 0; font-size:1rem; display:flex; align-items:center; gap:6px;">
-                ⚡ Opcja 1: System 4ECO
-            </p>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;">`;
-        variants4ECO.forEach(v => {
-            html += buildCard(v, v.kwh === selectedKwh && selectedBrand === '4eco', '4eco', arbProfit);
-        });
-        html += `</div></div>`;
-
-        // ─── Opcja 2: Solis — pełna szerokość, 3 kolumny ───
-        html += `
-        <div style="margin-bottom:8px;">
-            <p style="color:var(--accent-blue); font-weight:700; margin:0 0 12px 0; font-size:1rem; display:flex; align-items:center; gap:6px;">
-                ⚡ Opcja 2: System Solis
-            </p>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;">`;
-        variantsSolis.forEach(v => {
-            html += buildCard(v, v.kwh === selectedKwh && selectedBrand === 'solis', 'solis', arbProfit);
-        });
-        html += `</div></div>`;
-
-        grid.innerHTML = html;
-    }
-
-    function selectBattery(el, kwh, model, brand, dep) {
-        const d = window._calcData;
-        if(!d) return;
-
-        // Przelicz zyski dla wybranego magazynu
-        const arbP     = d.arbProfit;
-        const newSav1  = Math.round(d.sav1 + (kwh - d.recBat) * arbP * 180 * 0.5);
-        const inf      = 0.04;
-        let ns5 = 0, ns15 = 0, ns = newSav1;
-        for(let i=1;i<=15;i++){
-            ns *= (1+inf);
-            if(i<=5)  ns5  += ns;
-            if(i<=15) ns15 += ns;
-        }
-        ns5 += newSav1;
-        const fmt = n => Math.round(n).toLocaleString('pl-PL') + ' zł';
-
-        // Aktualizuj specyfikację
-        const batLabel = brand === '4eco' ? `SE${kwh}B (${kwh} kWh)` : `${model} (${kwh} kWh)`;
-        setText('res-bat',   batLabel);
-        setText('res-sav-1', fmt(newSav1));
-        setText('res-sav-5', fmt(ns5));
-        setText('res-sav-15',fmt(ns15));
-        setText('res-rec-bat', kwh + ' kWh');
-
-        // Aktualizuj moduł i taryfę dla Solis (brak zewnętrznego EMS)
-        if(brand === 'solis') {
-            setText('res-module', 'Wbudowany w falownik (Brak zewn. EMS)');
-        } else {
-            setText('res-module', 'Inteligentny Logger Wi-Fi (Moduł EMS)');
-        }
-
-        // Aktualizuj falownik zależnie od marki
-        const pvS = parseFloat(d.pvSuggested) || 5;
-        if(brand === 'solis') {
-            setText('res-inv', pvS <= 6 ? 'Solis 6kW HV' : pvS <= 8 ? 'Solis 8kW HV' : 'Solis 10kW HV');
-        } else {
-            setText('res-inv', pvS <= 6 ? 'HESP 6' : pvS <= 8 ? 'HESP 8' : 'HESP 10');
-        }
-
-        // Re-render gridu z nowym zaznaczeniem
-        renderBatteryGrid(kwh, brand, d.arbProfit, d.batVariants4ECO, d.batVariantsSolis,
-            d.pvExpandStr, d.invName, d.tariff, newSav1, Math.round(ns5), Math.round(ns15));
-    }
-
-    function generatePDF() {
-        // Pobierz aktualne dane z wyników
-        const winterD  = document.getElementById('res-daily-winter')?.textContent || '-';
-        const summerD  = document.getElementById('res-daily-summer')?.textContent || '-';
-        const recBatT  = document.getElementById('res-rec-bat')?.textContent || '-';
-        const pvT      = document.getElementById('res-pv')?.textContent || '-';
-        const invT     = document.getElementById('res-inv')?.textContent || '-';
-        const batT     = document.getElementById('res-bat')?.textContent || '-';
-        const backupT  = document.getElementById('res-backup')?.textContent || '-';
-        const moduleT  = document.getElementById('res-module')?.textContent || '-';
-        const tariffT  = document.getElementById('res-tariff')?.textContent || '-';
-        const sav1T    = document.getElementById('res-sav-1')?.textContent || '-';
-        const sav5T    = document.getElementById('res-sav-5')?.textContent || '-';
-        const sav15T   = document.getElementById('res-sav-15')?.textContent || '-';
-        const msgT     = document.getElementById('personalized-message')?.innerHTML || '';
-        const optT     = document.getElementById('res-optimization-text')?.textContent || '';
-        const today    = new Date().toLocaleDateString('pl-PL');
-
-        // Zbuduj zawartość raportu
-        const report = document.getElementById('print-report');
-        report.innerHTML = `
-            <div style="text-align:center; margin-bottom:30px; border-bottom:2px solid #10B981; padding-bottom:20px;">
-                <h1 style="font-size:2rem; margin:0; color:#111;">Aieco ⚡</h1>
-                <h2 style="font-size:1.4rem; font-weight:700; margin:10px 0 5px; color:#111; text-transform:uppercase; letter-spacing:1px;">PODSUMOWANIE AUDYTU OZE</h2>
-                <p style="color:#666; margin:0;">Wygenerowano: ${today}</p>
-            </div>
-
-            <div style="background:#F0FDF4; border-left:4px solid #10B981; border-radius:8px; padding:20px; margin-bottom:25px; font-size:0.95rem; color:#1E293B; line-height:1.7;">
-                ${msgT}
-            </div>
-
-            <div style="border:1px solid #F59E0B; border-radius:8px; padding:20px; margin-bottom:25px; background:#FFFDF0;">
-                <h3 style="color:#D97706; margin-top:0; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">🔍 Analiza: Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h3>
-                <p style="margin:0 0 8px 0;"><strong>✗ Twój obecny problem (Zwykła fotowoltaika):</strong></p>
-                <p style="font-size:0.88rem; color:#475569; margin:0 0 14px 0; line-height:1.6;">W godzinach południowych (11:00–14:00), gdy panele produkują najwięcej prądu, energia jest wypychana do sieci po drastycznie niskich stawkach RCE — często poniżej <strong>0,16 zł/kWh</strong>, a czasem do zera. Wieczorem (17:00–21:00), gdy zapotrzebowanie jest największe, musisz odkupić energię od operatora za nawet <strong>1,30 zł/kWh</strong>. System pomniejsza Twoje oszczędności każdego dnia.</p>
-                <p style="margin:0 0 8px 0;"><strong>✓ Rozwiązanie: Inteligentny magazyn Aieco (EMS)</strong></p>
-                <ul style="padding-left:20px; font-size:0.88rem; color:#475569; line-height:1.9; margin:0;">
-                    <li><strong>Blokada taniej sprzedaży:</strong> Nadwyżka słoneczna w południe w 100% ładuje magazyn, zamiast trafiać do sieci za grosze.</li>
-                    <li><strong>Darmowy prąd wieczorem:</strong> Od 17:00 do 22:00 dom zasilany jest wyłącznie ze zmagazynowanej energii — zero zakupu po stawce szczytowej.</li>
-                    <li><strong>Aktywny handel (Letni Arbitraż):</strong> System wstrzymuje eksport do momentu wieczornych pików cenowych na giełdzie (nawet 1,05 zł/kWh).</li>
-                    <li><strong>Zimowa Tarcza (G12):</strong> O 01:00 w nocy system ładuje magazyn tanim prądem (ok. 0,61 zł/kWh), by wieczorem całkowicie zastąpić drogi szczyt.</li>
-                </ul>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:25px; border:1px solid #E2E8F0; border-radius:8px; padding:20px;">
-                <div>
-                    <h3 style="margin-top:0; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; color:#64748B; border-bottom:1px solid #E2E8F0; padding-bottom:10px;">1. PROFIL ENERGETYCZNY I PROPONOWANY SYSTEM</h3>
-                    <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
-                        <tr><td style="padding:5px 0; color:#64748B;">Średniodobowe zużycie (ZIMA):</td><td style="text-align:right; font-weight:700;">${winterD}</td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Średniodobowe zużycie (LATO):</td><td style="text-align:right; font-weight:700;">${summerD}</td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Zalecana Pojemność Magazynu:</td><td style="text-align:right; font-weight:700; color:#F59E0B;">${recBatT}<br><small style="color:#10B981; font-weight:400;">+Na bazie profilu zimowego</small></td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Moc Instalacji PV:</td><td style="text-align:right; font-weight:700;">${pvT}</td></tr>
-                    </table>
-                </div>
-                <div>
-                    <h3 style="margin-top:0; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; color:#64748B; border-bottom:1px solid #E2E8F0; padding-bottom:10px;">&nbsp;</h3>
-                    <table style="width:100%; font-size:0.88rem; border-collapse:collapse;">
-                        <tr><td style="padding:5px 0; color:#64748B;">Model Falownika:</td><td style="text-align:right; font-weight:700;">${invT}</td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Wybrany Magazyn:</td><td style="text-align:right; font-weight:700;">${batT}</td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Zasilanie awaryjne (EPS):</td><td style="text-align:right; font-weight:700;">${backupT}</td></tr>
-                        <tr><td style="padding:5px 0; color:#64748B;">Zarządzanie / Moduł:</td><td style="text-align:right; font-weight:700; color:#10B981;">${moduleT}</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            <div style="border:1px solid #E2E8F0; border-radius:8px; padding:20px; margin-bottom:25px;">
-                <h3 style="margin-top:0; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; color:#64748B; border-bottom:1px solid #E2E8F0; padding-bottom:10px;">2. ANALIZA EKONOMICZNA</h3>
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:15px; text-align:center;">
-                    <div style="border:1px solid #E2E8F0; border-radius:8px; padding:15px;">
-                        <div style="font-size:0.7rem; text-transform:uppercase; color:#64748B; letter-spacing:1px; margin-bottom:5px;">1 ROK</div>
-                        <div style="font-size:1.6rem; font-weight:800; color:#10B981;">${sav1T}</div>
-                    </div>
-                    <div style="border:1px solid #E2E8F0; border-radius:8px; padding:15px;">
-                        <div style="font-size:0.7rem; text-transform:uppercase; color:#64748B; letter-spacing:1px; margin-bottom:5px;">5 LAT</div>
-                        <div style="font-size:1.6rem; font-weight:800; color:#10B981;">${sav5T}</div>
-                    </div>
-                    <div style="border:1px solid #E2E8F0; border-radius:8px; padding:15px;">
-                        <div style="font-size:0.7rem; text-transform:uppercase; color:#64748B; letter-spacing:1px; margin-bottom:5px;">15 LAT</div>
-                        <div style="font-size:1.6rem; font-weight:800; color:#10B981;">${sav15T}</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="background:#FFFBEB; border:1px solid #F59E0B; border-radius:8px; padding:20px; margin-bottom:25px;">
-                <h3 style="color:#D97706; margin-top:0; font-size:1rem; text-transform:uppercase;">💡 OPTYMALIZACJA PO PIERWSZYM ROKU</h3>
-                <p style="font-size:0.88rem; color:#1E293B; line-height:1.6; margin:0;">${optT}</p>
-            </div>
-
-            <div style="border-top:2px solid #E2E8F0; padding-top:15px; margin-top:10px; font-size:0.72rem; color:#94A3B8; line-height:1.6;">
-                <strong style="color:#64748B;">NOTA PRAWNA I METODOLOGIA:</strong> Niniejsze zestawienie ma charakter analityczno-poglądowy i zostało przygotowane wyłącznie na potrzeby wstępnej oceny efektywności ekonomicznej instalacji. Wyliczenia opierają się na historycznych profilach zużycia OSD, uśrednionych stawkach giełdowych RCEm oraz taryfach operatorów energetycznych. Zestawienie uwzględnia zaawansowane algorytmy zarządzania systemem Aieco EMS, lecz <strong style="color:#64748B;">nie stanowi oferty handlowej</strong> w rozumieniu art. 66 § 1 Kodeksu Cywilnego. Ostateczny dobór mocy, pojemności magazynu oraz precyzyjna wycena wymagają potwierdzenia podczas bezpłatnego audytu technicznego przeprowadzonego przez autoryzowanego doradcę 4ECO.
-            </div>
-        `;
-
-        window.print();
-    }
-
-    function checkInvType() {
-        setDisplay('retrofit-info', document.getElementById('cur-inv-type').value === 'string' ? 'block' : 'none');
-    }
-
-    function setInputMode(mode) {
-        inputMode = mode;
-        document.getElementById('btn-mode-kwh').classList.toggle('active', mode === 'kwh');
-        document.getElementById('btn-mode-bill').classList.toggle('active', mode === 'bill');
-        setDisplay('input-kwh', mode === 'kwh' ? 'block' : 'none');
-        setDisplay('input-bill', mode === 'bill' ? 'block' : 'none');
-    }
+    function markSubChanged() { subManuallyChanged = true; updateVal('sl-sub', 'val-sub', ' zł', true); }
 
     function checkTariff() {
         const val = document.getElementById('target-tariff').value;
         setDisplay('tariff-warning', val === 'g11' ? 'block' : 'none');
     }
 
-    function markSubChanged() {
-        updateVal('sl-sub', 'val-sub', ' zł', true);
+    function selectType(el, type) {
+        selectedType = type;
+        userForcedBatCap = null;
+        currentBrand = '4eco'; 
+        
+         document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+         el.classList.add('selected');
+        
+        if(type === 'none' || type === 'only_bat') {
+            setDisplay('tech-existing-pv', 'none');
+            setDisplay('tech-new-pv', (type === 'only_bat') ? 'none' : 'block');
+        } else {
+            setDisplay('tech-existing-pv', 'block');
+            setDisplay('tech-new-pv', 'none');
+        }
+
+        if(type === 'only_bat') {
+            setDisplay('pv-dir-container', 'none');
+        } else {
+            setDisplay('pv-dir-container', 'block');
+        }
+        
+        const rS = document.getElementById('cur-rules');
+        if(rS) {
+            if(type === 'none' || type === 'only_bat') rS.value = 'none';
+            else if(type === 'old_rules') rS.value = 'net-metering';
+            else if(type === 'new_rules') rS.value = 'net-billing';
+        }
+        
+        subManuallyChanged = false;
+        if(inputMode === 'bill') updateBillConversion();
+        setTimeout(() => goToStep(2), 300);
+    }
+    
+    function getEnergyAndProfit(cap, sizing) {
+        let vBatUsable = cap * 0.9;
+        let energyCost = 0;
+        let profit = 0;
+
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+
+        if (selectedType === 'only_bat') {
+            let dailyWinterCons = sizing.winterCons / 180;
+            let dailyPenaltyWinter = Math.max(0, sizing.winterEveningDemand - vBatUsable);
+            let winterPenaltyCost = dailyPenaltyWinter * 180 * (1.30 - 0.61);
+            let emptyBatWinter = Math.max(0, vBatUsable - sizing.winterEveningDemand);
+            let arbWinter = emptyBatWinter * 0.44 * 180;
+
+            let dailySummerCons = sizing.summerCons / 185;
+            let arbSummer = vBatUsable * 0.44 * 185;
+            
+            energyCost = (dailyWinterCons * 180 * 0.61) + winterPenaltyCost + (dailySummerCons * 185 * 0.61);
+            profit = arbWinter + arbSummer;
+        } else {
+            let dailySummerYield = sizing.targetPV * sizing.yieldMult;
+            let dailySummerCons = sizing.summerCons / 185;
+            
+            let dailySummerSelfCons = Math.min(dailySummerCons, dailySummerYield * selfConsRate); 
+            let summerExcess = Math.max(0, dailySummerYield - dailySummerSelfCons);
+            let summerGridPurchase = Math.max(0, dailySummerCons - dailySummerSelfCons);
+            
+            let storedForRCE = Math.min(summerExcess, vBatUsable);
+            let spillToGrid = Math.max(0, summerExcess - storedForRCE);
+            let emptyBatSummer = Math.max(0, vBatUsable - storedForRCE);
+            
+            let dailyRceProfit = (storedForRCE * 1.05) + (spillToGrid * 0.16) + (emptyBatSummer * 0.44);
+            let totalSummerRceProfit = dailyRceProfit * 185; 
+
+            let summerBaseCost = summerGridPurchase * 185 * 0.61;
+
+            let dailyWinterYield = sizing.targetPV * 1.0;
+            let dailyWinterCons = sizing.winterCons / 180;
+            
+            let dailyWinterSelfCons = Math.min(dailyWinterCons, dailyWinterYield);
+            let winterGridPurchaseDaily = Math.max(0, dailyWinterCons - dailyWinterSelfCons);
+            
+            let winterBaseCost = winterGridPurchaseDaily * 180 * 0.61;
+            
+            let dailyPenaltyWinter = Math.max(0, sizing.winterEveningDemand - vBatUsable);
+            let winterPenaltyCost = dailyPenaltyWinter * 180 * (1.30 - 0.61);
+            let emptyBatWinter = Math.max(0, vBatUsable - sizing.winterEveningDemand);
+            let totalWinterArbProfit = emptyBatWinter * 0.44 * 180;
+
+            energyCost = winterBaseCost + winterPenaltyCost + summerBaseCost;
+            profit = totalSummerRceProfit + totalWinterArbProfit;
+        }
+        return { energyCost, profit };
     }
 
-    function updateFinance() {}
+    function getSystemSizingAndCost(forcedBatCap = null, overrideBrand = null) {
+        let brand = overrideBrand || currentBrand;
+        
+        let slConsEl = document.getElementById('sl-cons');
+        let slBillEl = document.getElementById('sl-bill');
+        let slConsVal = slConsEl ? parseFloat(slConsEl.value) : 0;
+        let slBillVal = slBillEl ? parseFloat(slBillEl.value) : 0;
+        let consBase = 0;
 
-    // Init
-    goToStep(1);
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+        
+        let curPvEl = document.getElementById('sl-cur-pv');
+        let curPV = curPvEl ? parseFloat(curPvEl.value) : 0;
+
+        if (inputMode === 'kwh') {
+            consBase = slConsVal;
+        } else {
+            if (selectedType === 'none' || selectedType === 'only_bat') {
+                consBase = Math.max(0, ((slBillVal * 12) - 400) / 1.09);
+            } else {
+                let netGridPurchaseKwh = Math.max(0, ((slBillVal * 12) - 400) / 1.09);
+                let annualPvYield = curPV * 950;
+                let selfConsKwh = annualPvYield * selfConsRate;
+                let exportedKwh = annualPvYield - selfConsKwh;
+                let recoveredKwhValue = (selectedType === 'old_rules') ? (exportedKwh * 0.8) : (exportedKwh * 0.25);
+                consBase = netGridPurchaseKwh + selfConsKwh + recoveredKwhValue;
+            }
+        }
+        
+        let hpEl = document.getElementById('toggle-hp');
+        let slHpEl = document.getElementById('sl-hp-cons');
+        let evEl = document.getElementById('toggle-ev');
+        let slEvEl = document.getElementById('sl-ev-cons');
+
+        const consHP = (hpEl && hpEl.checked && slHpEl) ? parseFloat(slHpEl.value) : 0;
+        const consEV = (evEl && evEl.checked && slEvEl) ? parseFloat(slEvEl.value) : 0;
+        const totalCons = consBase + consHP + consEV;
+
+        let targetPV = 0; let addedPV = 0;
+        let curInvEl = document.getElementById('sl-cur-inv');
+        let curInv = curInvEl ? parseFloat(curInvEl.value) : 0;
+        
+        if (selectedType === 'none') {
+            let uPvEl = document.getElementById('sl-new-pv');
+            let uPV = uPvEl ? parseFloat(uPvEl.value) : 0;
+            targetPV = uPV === 0 ? (totalCons / 1000 * 1.2) : uPV;
+             addedPV = targetPV;
+        } else if (selectedType === 'old_rules' || selectedType === 'new_rules') {
+            let expEl = document.getElementById('toggle-expand-pv');
+            let isExp = expEl ? expEl.checked : false;
+            if (isExp) {
+                let tPvEl = document.getElementById('sl-target-pv');
+                let uTar = tPvEl ? parseFloat(tPvEl.value) : 0;
+                targetPV = uTar === 0 ? (totalCons / 1000 * 1.2) : uTar;
+                if (targetPV > curPV) addedPV = targetPV - curPV; else { targetPV = curPV; addedPV = 0; }
+            } else { targetPV = curPV; addedPV = 0; }
+        }
+
+        let pvDirEl = document.getElementById('pv-direction');
+        let pvDir = pvDirEl ? pvDirEl.value : 'south';
+        
+        let invMult = 0.95; let yieldMult = 5.0;
+         if (pvDir === 'south') { invMult = 0.95; yieldMult = 5.0; }
+        else if (pvDir === 'east_west') { invMult = 0.85; yieldMult = 4.2; }
+        else if (pvDir === 'east') { invMult = 0.9; yieldMult = 4.0; }
+        else if (pvDir === 'west') { invMult = 0.9; yieldMult = 4.0; }
+
+        let summerCons = (consBase * 0.5) + (consHP * 0.2) + (consEV * 0.5);
+        let winterCons = (consBase * 0.5) + (consHP * 0.8) + (consEV * 0.5);
+
+        let dailyWinterCons = winterCons / 180;
+        let winterEveningDemand = dailyWinterCons * 0.35;
+        
+        // Zmodyfikowana logika zimowa: dobór magazynu pod całościowe zużycie (na podstawie grafiki "pompa" = potężne zużycie)
+        let stratEl = document.getElementById('winter-strategy');
+        let strat = stratEl ? stratEl.value : 'eco';
+        let winterReqBatNominal;
+        if (strat === 'max') {
+            winterReqBatNominal = (dailyWinterCons * 0.8) / 0.9; 
+        } else {
+            // Skrypt domyślnie zabezpiecza całe dobowe zużycie zimowe jako punkt startowy przy wariancie 'eco' i inteligentnie nim zarządza
+            winterReqBatNominal = dailyWinterCons / 0.9; 
+        }
+
+        let summerReqBatNominal = targetPV * 1.0;
+        let reqBatNominal = Math.max(winterReqBatNominal, summerReqBatNominal) || 0;
+        
+        let isSolis = brand === 'solis';
+        let batList = isSolis ? PRICE_LIST.solis_bat : PRICE_LIST.bat;
+        let invList = isSolis ? PRICE_LIST.solis_inv : PRICE_LIST.inv;
+
+        let tempSizing = { totalCons, targetPV, curPV, addedPV, yieldMult, summerCons, winterCons, winterEveningDemand };
+        let matchedBat;
+        let effectiveForce = forcedBatCap !== null ? forcedBatCap : userForcedBatCap;
+        
+        if (effectiveForce !== null) {
+            matchedBat = batList.find(b => b.cap === effectiveForce) || batList.find(b => b.cap >= effectiveForce) || batList[batList.length - 1];
+        } else {
+            // Szukamy optymalnego na podstawie zapotrzebowania
+            matchedBat = batList.find(b => b.cap >= reqBatNominal) || batList[batList.length - 1];
+            if (!matchedBat || matchedBat.cap < 10) {
+                matchedBat = batList.find(b => b.cap >= 10) || batList[batList.length - 1];
+            }
+        }
+
+        let matchedInvName = ""; 
+        let isStringEl = document.getElementById('cur-inv-type');
+        let isString = isStringEl ? (isStringEl.value === 'string') : false;
+
+        let requiredInvPower = Math.max(targetPV * invMult, (isString ? curInv : 0));
+        requiredInvPower = requiredInvPower * 1.2;
+        
+        if (selectedType === 'only_bat') {
+            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)"; 
+         } else if (selectedType === 'none' || addedPV > 0 || isString) {
+            let matchedInv = invList.find(i => i.p >= requiredInvPower) || invList[invList.length - 1];
+            if (isString && addedPV === 0) {
+                matchedInvName = `Wymiana na: ${matchedInv.name}`;
+             } else {
+                matchedInvName = matchedInv.name;
+             }
+        } else {
+            matchedInvName = "Istniejący Falownik Hybrydowy"; 
+        }
+
+        let retailPrice = 0; 
+
+        return {
+             totalCons, targetPV, curPV, addedPV, matchedBat, matchedInvName, retailPrice,
+             winterEveningDemand: dailyWinterCons * 0.35, yieldMult, summerCons, winterCons
+         };
+    }
+
+    function autoSetCapex() {
+        const sizing4eco = getSystemSizingAndCost(null, '4eco');
+        const sizingSolis = getSystemSizingAndCost(null, 'solis');
+        window.baseRecommendedBatCap_4eco = sizing4eco.matchedBat.cap;
+        window.baseRecommendedBatCap_solis = sizingSolis.matchedBat.cap;
+        updateFinance(); 
+    }
+
+    function updateFinance() {
+        const sizing = getSystemSizingAndCost();
+        const alertNetBilling = document.getElementById('alert-sub-netbilling');
+        
+        if (alertNetBilling) {
+            let subEl = document.getElementById('toggle-sub');
+            if (selectedType === 'old_rules' && subEl && subEl.checked) {
+                alertNetBilling.style.display = 'block';
+            } else {
+                alertNetBilling.style.display = 'none';
+            }
+        }
+    }
+
+    function updateStepper() {
+        const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        let pBar = document.getElementById('progress-bar');
+        if(pBar) pBar.style.width = `${progress}%`;
+
+        document.querySelectorAll('.step-circle').forEach((circle, index) => {
+            circle.classList.remove('active', 'completed');
+            if (index + 1 === currentStep) circle.classList.add('active');
+             else if (index + 1 < currentStep) circle.classList.add('completed');
+        });
+
+        document.querySelectorAll('.step-content').forEach((content, index) => {
+            if (index + 1 === currentStep) content.classList.add('active');
+             else content.classList.remove('active');
+        });
+
+        setDisplay('btn-back', currentStep > 1 && currentStep < 5 ? 'block' : 'none');
+        
+        if (currentStep === 1) {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'none');
+         }
+         else if (currentStep < 4) {
+             setDisplay('btn-next', 'block');
+             setDisplay('btn-calc', 'none');
+         }
+         else if (currentStep === 4) {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'block');
+         }
+         else {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'none');
+             setDisplay('btn-back', 'none'); 
+         }
+    }
+
+    function goToStep(n) {
+        if (n > 1 && !selectedType) {
+            alert("Wybierz najpierw sytuację w Kroku 1, aby przejść dalej.");
+            return;
+        }
+
+        currentStep = n;
+        if (currentStep === 4) autoSetCapex();
+        if (currentStep === 5) {
+            if (isUnlocked) calculateAndShowResults(false);
+        }
+        updateStepper();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function unlockResults() {
+        const email = document.getElementById('lead-email').value;
+        const phone = document.getElementById('lead-phone').value;
+        if(email.includes('@') && phone.length > 5) {
+            setDisplay('lead-gate', 'none');
+            setDisplay('audit-results', 'block');
+            isUnlocked = true;
+            calculateAndShowResults(true);
+            sendLeadToSheets(email, phone);
+        } else {
+            alert("Proszę podać poprawny adres e-mail i numer telefonu.");
+        }
+    }
+
+    function applyBatteryVariant(cap, brand) {
+        userForcedBatCap = cap;
+        currentBrand = brand;
+        calculateAndShowResults(false);
+    }
+
+    function calcFinancialsForVariant(cap, oldBill, overrideBrand) {
+        let vSizing = getSystemSizingAndCost(cap, overrideBrand);
+        let vCapex = vSizing.retailPrice;
+        let vSub = 0;
+        let vTax = 0;
+        let vNet = 0;
+
+        let finData = getEnergyAndProfit(cap, vSizing);
+        let energyCost = finData.energyCost;
+        let profit = finData.profit;
+
+        let netEnergyCost = energyCost - profit;
+        let vNewBill = 0;
+        let vDep = 0;
+        let fixedGridCosts = 400;
+        
+        let ssoSubscription = 0;
+        if (overrideBrand === '4eco') {
+            ssoSubscription = cap * 2 * 12; 
+        } else if (overrideBrand === 'solis') {
+            ssoSubscription = 19.90 * 12; 
+        }
+
+        if (netEnergyCost < 0) {
+            vDep = Math.abs(netEnergyCost);
+            vNewBill = fixedGridCosts + ssoSubscription;
+         } else {
+            vNewBill = fixedGridCosts + netEnergyCost + ssoSubscription;
+        }
+
+        let vSav = oldBill - vNewBill + vDep;
+        if (vSav < 0) vSav = 0;
+
+        let vSafeDeposit = energyCost;
+        let vGenDeposit = profit;
+
+        return { vNet, vNewBill, vDep, vSav, vSizing, vCapex, vSafeDeposit, vGenDeposit, ssoSubscription };
+    }
+    
+    function get6Caps(standardCaps, recommendedCap) {
+        let baseIndex = standardCaps.findIndex(c => c >= recommendedCap);
+        if (baseIndex === -1) baseIndex = standardCaps.length - 1;
+        
+        let startIdx = Math.max(0, baseIndex - 1);
+        let endIdx = Math.min(standardCaps.length, startIdx + 6);
+        if (endIdx - startIdx < 6) {
+            startIdx = Math.max(0, endIdx - 6);
+        }
+        return standardCaps.slice(startIdx, startIdx + 6);
+    }
+
+    function calculateAndShowResults(shouldScroll = true) {
+        try {
+            if (!isUnlocked) return;
+
+            let tempForce = userForcedBatCap;
+            userForcedBatCap = null;
+            
+            let origSizing4eco = getSystemSizingAndCost(null, '4eco');
+            let origSizingSolis = getSystemSizingAndCost(null, 'solis');
+            
+            let recommendedCap4eco = origSizing4eco.matchedBat.cap;
+            let recommendedCapSolis = origSizingSolis.matchedBat.cap;
+            
+            userForcedBatCap = tempForce; 
+
+            const sizingBase = getSystemSizingAndCost();
+            let Y_costNoPV = sizingBase.totalCons * 1.09;
+            let oldBill = 0;
+            let fixedGridCosts = 400;
+            
+            let usageProfileEl = document.getElementById('usage-profile');
+            let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+            let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+            let selfCons = sizingBase.totalCons * selfConsRate; 
+            
+             if (inputMode === 'bill') {
+                let slBillEl = document.getElementById('sl-bill');
+                oldBill = (parseFloat(slBillEl ? slBillEl.value : 0) || 0) * 12;
+            } else {
+                if (selectedType === 'none' || selectedType === 'only_bat') {
+                    oldBill = Y_costNoPV;
+                } else if (selectedType === 'old_rules') {
+                     let exported = Math.max(0, (sizingBase.curPV * 950) - selfCons);
+                    let recovered = exported * 0.8;
+                    let bought = sizingBase.totalCons - selfCons;
+                    let netBought = Math.max(0, bought - recovered);
+                    oldBill = fixedGridCosts + (netBought * 1.09);
+                 } else if (selectedType === 'new_rules') {
+                    let exported = Math.max(0, (sizingBase.curPV * 950) - selfCons);
+                    let soldValue = exported * 0.25;
+                     let bought = sizingBase.totalCons - selfCons;
+                    let boughtCost = bought * 1.09;
+                     oldBill = fixedGridCosts + Math.max(0, boughtCost - soldValue);
+                }
+            }
+
+            let finMain = calcFinancialsForVariant(sizingBase.matchedBat.cap, oldBill, currentBrand);
+            const sizing = finMain.vSizing;
+            let newBill = finMain.vNewBill;
+            let depositSurplus = finMain.vDep;
+            let annualSavings = finMain.vSav;
+
+            // Wypełnienie uśrednionego zapotrzebowania
+            let dailyWinter = sizingBase.winterCons / 180;
+            let dailySummer = sizingBase.summerCons / 185;
+            setText('res-daily-winter', dailyWinter.toFixed(1) + " kWh / dobę");
+            setText('res-daily-summer', dailySummer.toFixed(1) + " kWh / dobę");
+            setText('res-rec-bat', recommendedCap4eco + " kWh");
+            
+            setText('pdf-daily-winter', dailyWinter.toFixed(1) + " kWh");
+            setText('pdf-daily-summer', dailySummer.toFixed(1) + " kWh");
+            setText('pdf-rec-bat', recommendedCap4eco + " kWh");
+
+            let msgHtml = "";
+            let pdfMsgHtml = "";
+            if (selectedType !== 'none') {
+                msgHtml = `Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie, pomimo posiadania fotowoltaiki. Gdybyś jej nie miał w ogóle, Twój rachunek wynosiłby aż <strong>${formatNum(Y_costNoPV)}</strong>.<br><br>Dzięki naszemu rozwiązaniu i tarczy Aieco, Twój rachunek spadnie do zaledwie <strong style="color:var(--primary); font-size:1.2rem;">${formatNum(newBill)}</strong> rocznie!`;
+                pdfMsgHtml = `Szanowny Kliencie,<br>Płaci Pan/Pani obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie, pomimo posiadania instalacji PV. Bez niej, rachunek wynosiłby ok. <strong>${formatNum(Y_costNoPV)}</strong>.<br><br>Dzięki wdrożeniu naszego systemu z magazynem energii, Pana/Pani nowy rachunek zostanie zredukowany do ok. <strong style="color:#10B981;">${formatNum(newBill)}</strong> rocznie.`;
+            } else {
+                msgHtml = `Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie.<br><br>Dzięki naszej instalacji z inteligentnym magazynem, Twój nowy rachunek spadnie do zaledwie <strong style="color:var(--primary); font-size:1.2rem;">${formatNum(newBill)}</strong> rocznie!`;
+                pdfMsgHtml = `Szanowny Kliencie,<br>Płaci Pan/Pani obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie.<br><br>Dzięki wdrożeniu naszej kompleksowej instalacji z magazynem energii, Pana/Pani nowy rachunek zostanie zredukowany do ok. <strong style="color:#10B981;">${formatNum(newBill)}</strong> rocznie.`;
+            }
+            
+            if (depositSurplus > 0) {
+                 msgHtml += ` A dodatkowo wygenerujesz <strong style="color:var(--primary);">${formatNum(depositSurplus)}</strong> rocznej nadwyżki z RCE!`;
+            }
+
+            setHtml('personalized-message', msgHtml);
+            setHtml('pdf-personalized-message', pdfMsgHtml);
+
+            let standardCaps4eco = [5, 10, 15, 16, 20, 25, 30, 32];
+            let subEl = document.getElementById('toggle-sub');
+            if (subEl && subEl.checked) standardCaps4eco = standardCaps4eco.filter(c => c >= 10);
+            let uniqueCaps4eco = get6Caps(standardCaps4eco, recommendedCap4eco);
+
+            let htmlVariants4eco = "";
+            uniqueCaps4eco.forEach(cap => {
+                let fin = calcFinancialsForVariant(cap, oldBill, '4eco');
+                let isActive = (cap === sizing.matchedBat.cap && currentBrand === '4eco') ? "active" : "";
+                
+                let isDanger = fin.vDep <= 0; 
+                let dangerClass = isDanger ? "danger" : "";
+                
+                let badge = "";
+                if (cap === recommendedCap4eco) {
+                    badge = `<div class="upsell-badge rec">Zalecany</div>`;
+                } else if (isDanger) {
+                    badge = `<div class="upsell-badge" style="background:var(--danger); color:#fff;">Za mały</div>`;
+                } else {
+                    badge = `<div class="upsell-badge">+ Niezależność</div>`;
+                }
+                
+                if (isActive) {
+                    badge = `<div class="upsell-badge rec" style="box-shadow: 0 0 5px rgba(255,255,255,0.5); ${isDanger ? 'background:var(--danger);' : ''}">Obecnie Wybrany</div>`;
+                }
+
+                let depositBadge = fin.vDep > 0 
+                    ? `<div class="upsell-deposit">+ ${formatNum(fin.vDep)} Depozytu</div>` 
+                    : `<div class="upsell-deposit" style="color:var(--danger); border-color:var(--danger); background:rgba(239,68,68,0.1);">Brak nadwyżki</div>`;
+
+                let priceDisplay = `<div class="upsell-price" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Sprawdź na mailu</div>`;
+
+                htmlVariants4eco += `
+                <div class="upsell-card ${isActive} ${dangerClass}" onclick="applyBatteryVariant(${cap}, '4eco')">
+                    ${badge}
+                    <div class="upsell-title">${cap} kWh</div>
+                    <div class="upsell-desc">${fin.vSizing.matchedBat.name}</div>
+                    ${priceDisplay}
+                    ${depositBadge}
+                </div>`;
+            });
+            setHtml('bat-variants-grid', htmlVariants4eco);
+
+            let standardCapsSolis = [5, 10, 15, 20, 25, 30];
+            if (subEl && subEl.checked) standardCapsSolis = standardCapsSolis.filter(c => c >= 10);
+            let uniqueCapsSolis = get6Caps(standardCapsSolis, recommendedCapSolis);
+
+            let htmlVariantsSolis = "";
+            uniqueCapsSolis.forEach(cap => {
+                let fin = calcFinancialsForVariant(cap, oldBill, 'solis');
+                let isActive = (cap === sizing.matchedBat.cap && currentBrand === 'solis') ? "active" : "";
+                
+                let isDanger = fin.vDep <= 0; 
+                let dangerClass = isDanger ? "danger" : "";
+                
+                let badge = "";
+                if (cap === recommendedCapSolis) {
+                    badge = `<div class="upsell-badge rec">Zalecany</div>`;
+                } else if (isDanger) {
+                    badge = `<div class="upsell-badge" style="background:var(--danger); color:#fff;">Za mały</div>`;
+                } else {
+                    badge = `<div class="upsell-badge">+ Niezależność</div>`;
+                }
+                
+                if (isActive) {
+                    badge = `<div class="upsell-badge rec" style="box-shadow: 0 0 5px rgba(255,255,255,0.5); ${isDanger ? 'background:var(--danger);' : ''}">Obecnie Wybrany</div>`;
+                }
+
+                let depositBadge = fin.vDep > 0 
+                    ? `<div class="upsell-deposit">+ ${formatNum(fin.vDep)} Depozytu</div>` 
+                    : `<div class="upsell-deposit" style="color:var(--danger); border-color:var(--danger); background:rgba(239,68,68,0.1);">Brak nadwyżki</div>`;
+
+                let priceDisplay = `<div class="upsell-price" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Sprawdź na mailu</div>`;
+
+                htmlVariantsSolis += `
+                <div class="upsell-card ${isActive} ${dangerClass}" onclick="applyBatteryVariant(${cap}, 'solis')">
+                    ${badge}
+                    <div class="upsell-title">${cap} kWh</div>
+                    <div class="upsell-desc">${fin.vSizing.matchedBat.name}</div>
+                    ${priceDisplay}
+                    ${depositBadge}
+                </div>`;
+            });
+            setHtml('solis-variants-grid', htmlVariantsSolis);
+
+            let pvText = sizing.targetPV > 0 ? sizing.targetPV.toFixed(1) + " kWp" : "Brak";
+            if(sizing.addedPV > 0) pvText += ` (+${sizing.addedPV.toFixed(1)} kWp rozbudowa)`;
+            setText('res-pv', pvText);
+            setText('p-pv', pvText);
+            
+            setText('res-inv', sizing.matchedInvName);
+            setText('p-inv', sizing.matchedInvName);
+            
+            let batText = sizing.matchedBat.cap > 0 ? `${sizing.matchedBat.name} (${sizing.matchedBat.cap} kWh)` : "Brak";
+            setText('res-bat', batText);
+            setText('p-bat', batText);
+            
+            let logText = currentBrand === 'solis' ? "Wbudowany w falownik (Brak zewn. EMS)" : "Inteligentny Logger Wi-Fi (Moduł EMS)";
+            setText('res-logger', logText);
+            setText('p-logger', logText);
+
+            let backText = wantsBackup ? "Tak (Moduł EPS + SZR)" : "Nie";
+            setText('res-backup', backText);
+            setText('p-backup', backText);
+            
+            let tariffEl = document.getElementById('target-tariff');
+            const tariff = tariffEl ? tariffEl.value.toUpperCase() : "G12";
+            setText('res-grid', tariff + (selectedType !== 'only_bat' ? " + RCE" : ""));
+
+            let cumm = 0;
+            let cumm5y = 0;
+
+            for(let i=1; i<=15; i++) {
+                let inf = Math.pow(1.04, i-1);
+                let yrOld = oldBill * inf;
+                let yrNewCalc = newBill * inf;
+                let yrSav = yrOld - yrNewCalc + (depositSurplus * inf);
+                
+                cumm += yrSav;
+                if (i === 5) {
+                    cumm5y = cumm;
+                }
+            }
+
+            // Uzupełnienie kafelków zysków 1, 5, 15 lat (strona)
+            setText('res-sav-1', formatNum(annualSavings));
+            setText('res-sav-5', formatNum(cumm5y));
+            setText('res-sav-15', formatNum(cumm));
+
+            // Uzupełnienie kafelków zysków (PDF)
+            setText('p-roi', formatNum(annualSavings));
+            setText('p-sav-5', formatNum(cumm5y));
+            setText('p-total-sav', formatNum(cumm));
+
+            // Wypełnienie dynamicznej wiadomości o optymalizacji po roku
+            let selectedCap = sizing.matchedBat.cap;
+            let capText = selectedCap > 0 ? selectedCap + ' kWh' : 'dobranej na start';
+            
+            let recNoteHtml = `
+                <h4 style="color: var(--primary); border-bottom-color: rgba(16, 185, 129, 0.3);">💡 Optymalizacja po pierwszym roku</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                    Dzisiaj proponujemy Ci magazyn energii o pojemności <strong>${capText}</strong>. Należy jednak pamiętać, że całkowite i w 100% precyzyjne zbilansowanie systemu do poziomu najniższych możliwych rachunków będziemy w stanie określić po pierwszym sezonie użytkowania. System Aieco (EMS) na bieżąco uczy się Twojego profilu i zbiera realne dane pomiarowe z Twojej instalacji. Po pełnym roku będziemy mogli z całkowitą pewnością stwierdzić, czy np. Twoje potrzeby się zmieniły i czy warto rozbudować magazyn o dodatkowe moduły.
+                </p>
+            `;
+            setHtml('dynamic-recommendation-note', recNoteHtml);
+            
+            let pdfRecNoteHtml = `
+                <h3 style="color: #10B981 !important; margin-bottom: 10px; border-bottom: none !important;">💡 Optymalizacja po pierwszym roku</h3>
+                <p style="font-size: 12px; color: #475569 !important; line-height: 1.6; margin: 0;">
+                    Dzisiaj proponujemy Ci magazyn energii o pojemności <strong>${capText}</strong>. Należy jednak pamiętać, że całkowite i w 100% precyzyjne zbilansowanie systemu do poziomu najniższych możliwych rachunków będziemy w stanie określić po pierwszym sezonie użytkowania. System Aieco (EMS) na bieżąco uczy się Twojego profilu i zbiera realne dane pomiarowe z Twojej instalacji. Po pełnym roku będziemy mogli z całkowitą pewnością stwierdzić, czy np. Twoje potrzeby się zmieniły i czy warto rozbudować magazyn o dodatkowe moduły.
+                </p>
+            `;
+            setHtml('pdf-dynamic-recommendation-note', pdfRecNoteHtml);
+
+            if(shouldScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        } catch (err) {
+            alert("Aplikacja napotkała błąd podczas generowania wyniku. Prawdopodobnie wprowadzono niepełne dane.");
+            console.error("Szczegóły błędu: ", err);
+        }
+    }
+
+    function generatePDF() {
+        setText('print-date', new Date().toLocaleDateString('pl-PL'));
+        window.print();
+    }
 </script>
-
-<div id="print-report" style="display:none; max-width:900px; margin:0 auto; font-family:Inter,sans-serif; color:#1E293B; background:#fff;"></div>
 </body>
 </html>
