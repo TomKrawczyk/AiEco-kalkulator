@@ -535,131 +535,162 @@
         </div>
 
         <div class="step-content" id="step-5">
+        <div class="step-content" id="step-5">
             
             <div id="lead-gate" style="display: block; text-align: center;">
-                <h2 class="step-title">Audyt przygotowany! ⚡</h2>
-                <p class="step-desc">Podaj namiary, aby odblokowć wyniki i warianty instalacji.</p>
+                <h2 class="step-title">Audyt został przygotowany! ⚡</h2>
+                <p class="step-desc">Dowiedz się, jaki sprzęt powinieneś zainstalować. Podaj namiar na siebie, aby bezpłatnie odblokować wyniki i sprawdzić techniczne warianty instalacji.</p>
                 
                 <div style="background: var(--bg-input); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 400px; margin: 0 auto; text-align: left;">
                     <div class="form-group">
-                        <label>E-mail:</label>
-                        <input type="email" id="lead-email" placeholder="np. jan@email.pl" required>
+                        <label>Twój adres E-mail:</label>
+                        <input type="email" id="lead-email" placeholder="np. jan.kowalski@email.pl" required>
                     </div>
                     <div class="form-group">
-                        <label>Telefon:</label>
+                        <label>Numer telefonu:</label>
                         <input type="tel" id="lead-phone" placeholder="np. 123 456 789" required>
                     </div>
-                    <button type="button" class="btn btn-next" style="width: 100%; margin: 0; margin-top: 10px;" onclick="unlockResults()">Odbierz audyt</button>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 15px;">Wyrażam zgodę na kontakt doradcy.</p>
+                    <button type="button" class="btn btn-next" style="width: 100%; margin: 0; margin-top: 10px;" onclick="unlockResults()">Odbierz wynik audytu</button>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 15px;">Klikając, wyrażasz zgodę na kontakt z naszym doradcą w celu przedstawienia wyceny i szczegółów technicznych dopasowanego systemu.</p>
                 </div>
             </div>
 
             <div id="audit-results" style="display: none;">
-                <h2 class="step-title">Podsumowanie</h2>
-                <p class="step-desc">Precyzyjne zestawienie wyliczeń.</p>
+                <h2 class="step-title">Podsumowanie Audytu</h2>
+                <p class="step-desc">Oto precyzyjne zestawienie wyliczeń z inteligentnym magazynem.</p>
 
-                <div id="personalized-message" class="advisor-message"></div>
+                <div id="personalized-message" class="advisor-message">
+                </div>
                 
-
-
-                <!-- PROFIL ENERGETYCZNY -->
-                <div class="summary-section" style="border: 1px solid var(--primary); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-top:0;">TWÓJ PROFIL ENERGETYCZNY</h4>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Średniodobowe zużycie (ZIMA):</span>
-                        <strong id="res-daily-winter" style="color:#fff;">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Średniodobowe zużycie (LATO):</span>
-                        <strong id="res-daily-summer" style="color:#fff;">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0;">
-                        <span>Zalecana pojemność magazynu na zimę:</span>
-                        <strong id="res-rec-bat" style="color: #F59E0B; font-size:1.2rem;">-</strong>
-                    </div>
-                    <p id="res-bat-desc" style="font-size:0.85rem; color: var(--text-muted); margin-top:10px; line-height:1.5;"></p>
+                <div class="advisor-message" style="background: var(--bg-input); border-left: 4px solid #F59E0B; box-shadow: none; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <h4 style="color: #F59E0B; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem;">🔍 Analiza: Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h4>
+                    
+                    <p style="margin-bottom: 5px; color: #FCA5A5;"><strong>✖ Twój obecny problem (Zwykła fotowoltaika):</strong></p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0; line-height: 1.6;">
+                        W godzinach południowych (zazwyczaj 11:00 - 14:00), gdy Twoje panele produkują najwięcej prądu, energia nie jest na bieżąco zużywana w domu. Jest "wypychana" do sieci po drastycznie niskich, rynkowych stawkach RCE (spadających często poniżej <strong>0,16 zł / kWh</strong>, a czasem nawet do zera!). Wieczorem (17:00 - 21:00), gdy wracasz do domu, włączasz TV, pralkę i oświetlenie – panele już nie produkują. Musisz odkupić energię od operatora w najdroższym możliwym momencie, płacąc nawet do <strong>1,30 zł / kWh</strong>. System systematycznie pomniejsza Twoje oszczędności.
+                    </p>
+                    
+                    <p style="margin-bottom: 5px; margin-top: 20px; color: var(--primary);"><strong>✔ Rozwiązanie: Inteligentny magazyn Aieco (EMS)</strong></p>
+                    <ul style="font-size: 0.9rem; color: var(--text-muted); padding-left: 20px; line-height: 1.6; margin-top: 0;">
+                        <li><strong>Blokada taniej sprzedaży:</strong> W południe nadwyżka ze słońca nie trafia już do sieci za "grosze". Zamiast tego całkowicie ładuje Twój magazyn energii.</li>
+                        <li><strong>Darmowy prąd wieczorem:</strong> Od 17:00 do 22:00 Twój dom odłącza się od drogiej sieci. Omijasz wysoką stawkę <strong>1,30 zł / kWh</strong> i zasilasz dom w 100% zmagazynowaną darmową energią.</li>
+                        <li><strong>Aktywny handel (Letni Arbitraż):</strong> Gdy bateria jest pełna w słoneczny dzień, system wstrzymuje się z eksportem do sieci. Czeka na wieczorne piki cen na giełdzie, by automatycznie sprzedać prąd za najwyższą kwotę (nawet 1,05 zł / kWh).</li>
+                        <li><strong>Zimowa Tarcza (Taryfa G12):</strong> Gdy zimą słońca jest mało, sztuczna inteligencja o godzinie 01:00 w nocy pobiera tani prąd (za ok. <strong>0,61 zł</strong>). Wieczorem używa go w domu, więc nie kupujesz w ogóle prądu w drogich szczytach!</li>
+                    </ul>
                 </div>
 
-                <!-- WYBIERZ POJEMNOŚĆ MAGAZYNU -->
-                <div class="summary-section" style="border: 1px solid var(--accent-blue); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-top:0;">WYBIERZ POJEMNOŚĆ MAGAZYNU ENERGII</h4>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Zwiększenie magazynu poszerza możliwości zysku na tarczy RCE. Kliknij na kafelek poniżej, aby sprawdzić inne opcje.</p>
-                    <!-- Opcja 1: 4ECO -->
-                    <p style="color:var(--primary); font-weight:700; margin:0 0 12px 0; font-size:1rem;">⚡ Opcja 1: System 4ECO</p>
-                    <div id="bat-variants-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%; margin-bottom:24px;"></div>
-
-                    <!-- Opcja 2: Solis -->
-                    <p style="color:var(--accent-blue); font-weight:700; margin:0 0 12px 0; font-size:1rem;">⚡ Opcja 2: System Solis</p>
-                    <div id="solis-variants-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; width:100%;"></div>
+                <div class="summary-section" style="background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
+                    <h4 style="color: var(--primary); border-bottom-color: rgba(16, 185, 129, 0.3);">Twój Profil Energetyczny</h4>
+                    <div class="flex-between"><span>Średniodobowe zużycie (ZIMA):</span><strong id="res-daily-winter">-</strong></div>
+                    <div class="flex-between"><span>Średniodobowe zużycie (LATO):</span><strong id="res-daily-summer">-</strong></div>
+                    <div class="flex-between" style="border-top: 1px dashed var(--primary-glow); padding-top: 10px; margin-top: 5px;">
+                        <span>Zalecana pojemność magazynu na zimę:</span><strong id="res-rec-bat" style="color: #F59E0B; font-size: 1.2rem;">-</strong>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; margin-bottom: 0;">Na podstawie wyliczonego zapotrzebowania zimowego, nasz system w tle zaproponował optymalny bufor magazynowy. Taka pojemność zapewni Ci pełne zasilanie w najdroższych godzinach szczytowych bez konieczności dobierania drogiego prądu z sieci.</p>
                 </div>
 
-                <!-- SPECYFIKACJA SYSTEMU -->
-                <div class="summary-section" style="background: var(--bg-input); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="text-transform: uppercase; letter-spacing: 1px; margin-top:0;">SPECYFIKACJA GŁÓWNEGO SYSTEMU</h4>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Sugerowana Moc PV:</span><strong id="res-pv" style="color:#fff;">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+                <div class="summary-section" style="background: rgba(2, 132, 199, 0.05); border-color: var(--accent-blue);">
+                    <h4 style="color: var(--accent-blue); border-bottom-color: rgba(2, 132, 199, 0.3);">Wybierz Pojemność Magazynu Energii</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Zwiększenie magazynu poszerza możliwości zysku na tarczy RCE. Kliknij na kafelek poniżej, aby sprawdzić inne opcje.</p>
+                    
+                    <h5 style="color: #fff; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">⚡ Opcja 1: System 4ECO</h5>
+                    <div class="upsell-grid" id="bat-variants-grid"></div>
+
+                    <h5 style="color: #F59E0B; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">⚡ Opcja 2: System Solis</h5>
+                    <div class="upsell-grid" id="solis-variants-grid"></div>
+                </div>
+
+                <div class="summary-section">
+                    <h4>Specyfikacja Głównego Systemu</h4>
+                    <div class="flex-between"><span>Sugerowana Moc PV:</span><strong id="res-pv">-</strong></div>
+                    <div class="flex-between">
                         <span>Falownik / Logika:</span>
                         <div style="text-align:right;">
-                            <strong id="res-inv" style="color:#fff;">-</strong><br>
-                            <span style="font-size:0.7rem; color:var(--primary);">*Zoptymalizowano pod kątem orientacji i magazynu</span>
+                            <strong id="res-inv">-</strong><br>
+                            <span style="font-size: 0.7rem; color: var(--primary);">*Zoptymalizowano pod kątem orientacji i magazynu</span>
                         </div>
                     </div>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Magazyn Energii:</span><strong id="res-bat" style="color:#fff;">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Moduł Komunikacji:</span><strong id="res-logger" style="color: var(--primary);">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0; border-bottom: 1px solid var(--border-color);">
-                        <span>Zasilanie awaryjne:</span><strong id="res-backup" style="color: var(--accent-blue);">-</strong>
-                    </div>
-                    <div class="flex-between" style="padding: 8px 0;">
-                        <span>Docelowa Taryfa:</span><strong id="res-grid" style="color:#fff;">-</strong>
-                    </div>
-                    <p style="color: var(--primary); font-size:0.9rem; margin-top:15px; margin-bottom:0;">Dokładną wycenę systemu prześlemy mailowo!</p>
-                </div>
-
-                <!-- ZYSKI -->
-                <div class="summary-section" style="background: var(--bg-input); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="text-transform: uppercase; letter-spacing: 1px; margin-top:0; color: var(--text-muted);">Zyski Oszacowane Systemem</h4>
-                    <div class="grid-3">
-                        <div class="sav-box">
-                            <span style="text-transform:uppercase; font-size:0.7rem; letter-spacing:1px; color: var(--primary);">Oszczędności (1 rok)</span>
-                            <strong id="res-sav-1" style="font-size:1.8rem;">0 zł</strong>
-                        </div>
-                        <div class="sav-box">
-                            <span style="text-transform:uppercase; font-size:0.7rem; letter-spacing:1px; color: var(--primary);">Oszczędności (5 lat)</span>
-                            <strong id="res-sav-5" style="font-size:1.8rem;">0 zł</strong>
-                        </div>
-                        <div class="sav-box">
-                            <span style="text-transform:uppercase; font-size:0.7rem; letter-spacing:1px; color: var(--primary);">Oszczędności (15 lat)</span>
-                            <strong id="res-sav-15" style="font-size:1.8rem;">0 zł</strong>
-                        </div>
+                    <div class="flex-between"><span>Magazyn Energii:</span><strong id="res-bat">-</strong></div>
+                    <div class="flex-between"><span>Moduł Komunikacji:</span><strong id="res-logger" style="color:var(--primary);">-</strong></div>
+                    <div class="flex-between"><span>Zasilanie awaryjne:</span><strong id="res-backup" style="color:var(--accent-blue);">-</strong></div>
+                    <div class="flex-between"><span>Docelowa Taryfa:</span><strong id="res-grid">-</strong></div>
+                    
+                    <div class="flex-between total-row" style="margin-top: 15px;">
+                        <span style="color: var(--primary);">Dokładną wycenę systemu prześlemy mailowo!</span>
                     </div>
                 </div>
 
-                <!-- OPTYMALIZACJA PO PIERWSZYM ROKU -->
-                <div class="summary-section" style="border: 1px solid #F59E0B; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-                    <h4 style="color: #F59E0B; text-transform: uppercase; letter-spacing: 1px; margin-top:0;">💡 OPTYMALIZACJA PO PIERWSZYM ROKU</h4>
-                    <p id="res-optimization-text" style="font-size:0.9rem; color: var(--text-muted); line-height:1.6; margin:0;"></p>
+                <h4 style="color:#fff; margin-bottom:10px; margin-top:30px;">Zyski Oszacowane Systemem</h4>
+                <div class="grid-3">
+                    <div class="sav-box">
+                        <span>Oszczędności (1 Rok)</span>
+                        <strong id="res-sav-1">0 zł</strong>
+                    </div>
+                    <div class="sav-box">
+                        <span>Oszczędności (5 Lat)</span>
+                        <strong id="res-sav-5">0 zł</strong>
+                    </div>
+                    <div class="sav-box">
+                        <span>Oszczędności (15 Lat)</span>
+                        <strong id="res-sav-15">0 zł</strong>
+                    </div>
                 </div>
 
-                <!-- SZCZEGÓŁOWE WYJAŚNIENIE -->
+                <div id="dynamic-recommendation-note" class="summary-section" style="margin-top: 25px; background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
+                </div>
+
                 <details class="math-explainer">
-                    <summary style="cursor:pointer; padding: 18px 25px; display:flex; align-items:center; justify-content:space-between; list-style:none; color: var(--accent-blue); font-weight:600;">
-                        <span>⚙️ &nbsp; Zobacz szczegółowe wyjaśnienie obliczeń</span>
-                        <span>▼</span>
-                    </summary>
-                    <div class="math-content" id="math-explainer-content"></div>
+                    <summary>Zobacz szczegółowe wyjaśnienie obliczeń</summary>
+                    <div class="math-content">
+                        <p style="margin-top:0;">Algorytm analityczny bazuje na historycznych profilach zużycia OSD oraz uśrednionych stawkach giełdowych RCEm i taryfach strefowych G12/G12w. Wykorzystujemy modelowanie różnicowe (zima/lato), aby precyzyjnie zasymulować pracę algorytmów sztucznej inteligencji Aieco EMS.</p>
+                        
+                        <h6><span style="font-size: 1.2rem;">📊</span> 1. Podział sezonowy i profilowanie (Zima vs Lato)</h6>
+                        <ul>
+                            <li>Zapotrzebowanie dzielone jest na 185 dni okresu letniego (produkcyjnego) oraz 180 dni okresu grzewczego (zimowego).</li>
+                            <li>Jeśli obiekt posiada pompę ciepła, krzywa obciążenia przesuwa się drastycznie: aż 80% rocznego zużycia przypisywane jest na miesiące zimowe, co determinuje wymaganą pojemność magazynu.</li>
+                        </ul>
+
+                        <h6><span style="font-size: 1.2rem;">🔄</span> 2. Autokonsumpcja (Bieżące Zużycie)</h6>
+                        <ul>
+                            <li>Wyliczenia bazują na zadeklarowanym profilu życia: Praca poza domem = 20%, Praca zdalna = 35%, Smart Home (przesuwanie zużycia na godziny południowe) = 45%.</li>
+                            <li>Autokonsumpcja jest potężnym generatorem oszczędności, ponieważ 1 kWh prądu użytego ze słońca na bieżąco to ominięcie kosztu dystrybucji ok. 1.09 zł - 1.30 zł. Energia niewykorzystana trafia najpierw do magazynu.</li>
+                        </ul>
+
+                        <h6><span style="font-size: 1.2rem;">☀️</span> 3. Arbitraż Letni (RCE)</h6>
+                        <ul>
+                            <li>Szacujemy letnią nadwyżkę w oparciu o wielkość PV oraz orientację względem słońca.</li>
+                            <li>Nadwyżka w południe w 100% ładuje magazyn. To, co się "przeleje" (przy pełnej baterii), oddawane jest po niskiej stawce RCE (ok. 0.16 zł/kWh).</li>
+                            <li>Niewykorzystana w ciągu dnia bateria ładuje się nocą w taniej taryfie i sprzedaje prąd w wieczornym szczycie giełdowym (zysk ok. 0.44 zł/kWh netto).</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">❄️</span> 4. Tarcza Zimowa (G12)</h6>
+                        <ul>
+                            <li>Szacujemy Twoje zużycie w godzinach drogiego szczytu G12 (15:00 - 22:00).</li>
+                            <li>Algorytm dobiera magazyn na podstawie wyliczonego średniodobowego zapotrzebowania zimowego. Ewentualne braki zliczane są po karnej stawce szczytowej.</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">💰</span> 5. Koszty i Dotacje</h6>
+                        <ul>
+                            <li>Kalkulacja przewiduje 4-procentową inflację cen energii w ujęciu rocznym.</li>
+                            <li>Rachunek w modelu Aieco zakłada <strong>opłaty stałe (abonamentowe)</strong> w wysokości ok. 400 zł rocznie, niepodlegające pokryciu z wirtualnego depozytu (zgodnie z przepisami prawa energetycznego).</li>
+                            <li>Wbudowany skrypt "Mój Prąd" restrykcyjnie weryfikuje minimalny warunek 10 kWh dla magazynu, dopasowując procentowy udział dotacji do kosztów kwalifikowanych.</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">🤖</span> 6. Automatyka Aieco EMS (SSO)</h6>
+                        <ul>
+                            <li>Rozwiązania hybrydowe zintegrowane są z chmurą analityczną decydującą w czasie rzeczywistym o handlu energią.</li>
+                            <li>Koszty utrzymania platformy: w wariancie 4ECO wyceniono je na 2 zł/mc za każdy 1 kWh pojemności baterii, w wariancie Solis jest to zryczałtowane 19,90 zł/mc. Opłaty zostały z góry <strong>odjęte od prezentowanych zysków</strong> (model netto).</li>
+                        </ul>
+                    </div>
                 </details>
 
-                <button type="button" class="btn btn-pdf" style="background: var(--accent-blue); width:100%; margin-top:20px; font-size:1.05rem;" onclick="generatePDF()">📄 Pobierz Podsumowanie (PDF)</button>
+                <div class="section-divider"></div>
 
+                <button type="button" class="btn btn-pdf" onclick="generatePDF()">📄 Pobierz Podsumowanie (PDF)</button>
             </div>
         </div>
 
+        <div class="footer-nav">
         <div class="footer-nav">
             <button type="button" id="btn-back" class="btn btn-prev" style="display: none;" onclick="goToStep(currentStep - 1)">Wstecz</button>
             <button type="button" id="btn-next" class="btn btn-next" style="display: none;" onclick="goToStep(currentStep + 1)">Dalej ➔</button>
