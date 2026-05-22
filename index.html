@@ -63,7 +63,7 @@
         }
 
         /* Kontener kroków */
-        .step-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; min-height: 400px; }
+        .step-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; min-height: 400px; overflow: hidden; box-sizing: border-box; }
         .step-content { display: none; animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
         .step-content.active { display: block; opacity: 1; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
@@ -93,7 +93,7 @@
         .choice-tile.active { background: rgba(16, 185, 129, 0.1); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
 
         /* Formularze i Suwaki */
-        .form-group { margin-bottom: 25px; position: relative; }
+        .form-group { margin-bottom: 25px; position: relative; box-sizing: border-box; max-width: 100%; }
         label { display: block; font-weight: 600; margin-bottom: 12px; font-size: 0.95rem; color: #E2E8F0; word-wrap: break-word; }
         select, input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-family: inherit; font-size: 1rem; }
         select:focus, input[type="number"]:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus { outline: none; border-color: var(--primary); }
@@ -107,9 +107,9 @@
         .input-switch { display: flex; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 25px; gap: 0; }
         .input-switch button { flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.3s; font-size: 0.85rem; }
         .input-switch button.active { background: var(--bg-input); color: var(--primary); }
-        .toggle-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .toggle-box span { font-weight: 600; font-size: 1rem; color: #fff; flex: 1; min-width: 200px; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; flex-shrink: 0; }
+        .toggle-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; flex-wrap: nowrap; gap: 15px; box-sizing: border-box; width: 100%; max-width: 100%; overflow: hidden; }
+        .toggle-box span { font-weight: 600; font-size: 1rem; color: #fff; flex: 1; min-width: 0; word-break: break-word; }
+        .switch { position: relative; display: inline-block; width: 50px; min-width: 50px; height: 26px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider-toggle { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
         .slider-toggle:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
