@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aieco - Konfigurator OZE 4ECO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0B0F19;
+            --bg-card: #151C2C;
+            --bg-input: #1E293B;
+            --primary: #10B981;
+            --primary-hover: #059669;
+            --primary-glow: rgba(16, 185, 129, 0.25);
+            --accent-blue: #0ea5e9;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            --danger: #EF4444;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .aieco-app { width: 100%; max-width: 850px; margin-top: 10px; display: flex; flex-direction: column; gap: 25px; }
+        
+        /* Nagłówek i Logo */
+        .app-header { text-align: center; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; }
+        .app-logo-img { height: 60px; object-fit: contain; margin-bottom: 5px; }
+        .app-logo { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .app-logo span { color: var(--primary); }
+        .app-subtitle { color: var(--text-muted); font-size: 0.95rem; margin-top: 8px; }
+
+        /* Stepper */
+        .stepper-nav { display: flex; justify-content: space-between; align-items: center; position: relative; margin-bottom: 20px; padding: 0 10px; }
+        .stepper-nav::before { content: ''; position: absolute; top: 50%; left: 20px; right: 20px; height: 2px; background: var(--border-color); z-index: 1; transform: translateY(-50%); }
+        .stepper-progress { position: absolute; top: 50%; left: 20px; height: 2px; background: var(--primary); z-index: 2; transform: translateY(-50%); transition: width 0.4s ease; width: 0%; }
+        .step-circle { width: 38px; height: 38px; border-radius: 50%; background: var(--bg-dark); border: 2px solid var(--border-color); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; z-index: 3; position: relative; transition: 0.3s ease; cursor: pointer; }
+        .step-circle:hover { border-color: var(--primary); color: var(--primary); }
+        .step-circle.active { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+        .step-circle.completed { background: var(--primary); border-color: var(--primary); color: var(--bg-dark); }
+        .step-label { position: absolute; top: 48px; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
+        .step-circle.active .step-label { color: var(--primary); }
+
+        /* Kontener kroków */
+        .step-container { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; min-height: 450px; }
+        .step-content { display: none; animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
+        .step-content.active { display: block; opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .step-title { font-size: 1.6rem; margin: 0 0 10px 0; color: #fff; text-align: center; }
+        .step-desc { text-align: center; color: var(--text-muted); margin-bottom: 35px; font-size: 0.95rem; }
+
+        /* Kafelki */
+        .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 650px) { .tiles-grid { grid-template-columns: 1fr; } }
+        .tile { background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        .tile:hover { border-color: var(--primary); transform: translateY(-4px); background: rgba(16, 185, 129, 0.05); }
+        .tile.selected { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 20px var(--primary-glow); }
+        .tile-icon { font-size: 2.8rem; line-height: 1; margin-bottom: 5px; }
+        .tile-title { font-weight: 700; color: #fff; font-size: 1.1rem; margin: 0;}
+        .tile-desc { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.4;}
+
+        .choice-tiles { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .choice-tile { flex: 1; min-width: 100px; background: var(--bg-input); border: 2px solid var(--border-color); border-radius: 10px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); display: flex; flex-direction: column; justify-content: center; align-items: center; line-height: 1.3; }
+        .choice-tile small { font-size: 0.75rem; font-weight: 400; margin-top: 5px; opacity: 0.8; }
+        .choice-tile:hover { border-color: var(--primary); color: #fff; }
+        .choice-tile.active { background: rgba(16, 185, 129, 0.1); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+
+        /* Formularze i Suwaki */
+        .form-group { margin-bottom: 25px; position: relative; }
+        label { display: block; font-weight: 600; margin-bottom: 12px; font-size: 0.95rem; color: #E2E8F0;}
+        select, input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; font-family: inherit; font-size: 1rem; transition: 0.2s; box-sizing: border-box; }
+        select:focus, input[type="number"]:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus { outline: none; border-color: var(--primary); }
+        .val-display { font-weight: 800; color: var(--primary); font-size: 1.25rem; position: absolute; right: 0; top: 0; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: var(--border-color); border-radius: 10px; outline: none; margin-top: 20px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 0 12px var(--primary-glow); transition: 0.1s; }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+        /* Zakładki i Toggles */
+        .input-switch { display: flex; background: var(--bg-dark); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 25px; }
+        .input-switch button { flex: 1; padding: 12px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: 0.3s; }
+        .input-switch button.active { background: var(--bg-input); color: var(--primary); }
+        .toggle-box { display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; cursor: pointer; }
+        .toggle-box span { font-weight: 600; font-size: 1rem; color: #fff;}
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-toggle { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border-color); transition: .4s; border-radius: 34px; }
+        .slider-toggle:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider-toggle { background-color: var(--primary); }
+        input:checked + .slider-toggle:before { transform: translateX(24px); }
+        .conditional-box { display: none; background: rgba(255,255,255,0.02); padding: 25px 20px; border-radius: 10px; border: 1px dashed var(--border-color); margin-top: -10px; margin-bottom: 25px; }
+        .conditional-box.active { display: block; animation: fadeIn 0.3s; }
+
+        .alert-info { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--primary); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #A7F3D0; margin-top: 10px; line-height: 1.5;}
+        .alert-warn { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #FCA5A5; margin-top: 10px; line-height: 1.5;}
+        .section-divider { width: 100%; height: 1px; background: var(--border-color); margin: 35px 0; }
+
+        /* Przycisk Info */
+        .info-btn { display: inline-flex; justify-content: center; align-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: var(--bg-dark); font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-left: 8px; vertical-align: middle; transition: 0.2s;}
+        .info-btn:hover { background: #fff; transform: scale(1.1);}
+
+        /* Nawigacja dolna */
+        .footer-nav { display: flex; justify-content: space-between; margin-top: 35px; border-top: 1px solid var(--border-color); padding-top: 25px; }
+        .btn { padding: 14px 28px; border-radius: 10px; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.3s; border: none; font-family: inherit; }
+        .btn-prev { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .btn-prev:hover { background: var(--border-color); color: #fff; }
+        .btn-next { background: var(--primary); color: #fff; flex: 1; margin-left: 15px; box-shadow: 0 4px 15px var(--primary-glow); }
+        .btn-next:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-pdf { background: var(--accent-blue); width: 100%; color: white; margin-top: 15px; font-size: 1rem;}
+        .btn-pdf:hover { background: #0284c7; }
+
+        /* WYNIKI - KROK 5 */
+        .advisor-message { background: linear-gradient(145deg, #1E293B 0%, #0F172A 100%); border-left: 4px solid var(--primary); padding: 25px; border-radius: 12px; margin-bottom: 25px; font-size: 1.05rem; line-height: 1.6; color: #E2E8F0; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .advisor-message strong { color: #fff; }
+
+        .summary-section { background: var(--bg-input); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; margin-bottom: 20px; }
+        .summary-section h4 { margin: 0 0 15px 0; color: #fff; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px dashed var(--border-color); padding-bottom: 10px;}
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 0.95rem; }
+        .flex-between span { color: var(--text-muted); }
+        .flex-between strong { color: #fff; text-align: right;}
+        
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        @media (max-width: 650px) { .grid-3 { grid-template-columns: 1fr; } }
+        .sav-box { background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 20px 15px; border-radius: 10px; text-align: center; }
+        .sav-box span { display: block; font-size: 0.8rem; color: var(--primary); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;}
+        .sav-box strong { font-size: 1.8rem; color: #fff; font-weight: 800;}
+
+        /* Oś czasu Dźwigni */
+        .lever-container { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; }
+        .lever-title { font-weight: 700; color: #fff; margin-bottom: 10px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
+        .timeline-wrap { display: flex; height: 32px; border-radius: 6px; overflow: hidden; margin-bottom: 5px; border: 1px solid #000; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        .t-seg { display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
+        .t-sleep { background: #1E293B; color: #64748B; }
+        .t-pv { background: #F59E0B; color: #fff; }
+        .t-sell { background: #10B981; color: #fff; box-shadow: 0 0 10px rgba(16,185,129,0.5); z-index: 2; position: relative;}
+        .t-buy { background: #0284C7; color: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.3);}
+        .t-use { background: #8B5CF6; color: #fff; }
+        .t-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600;}
+
+        /* NOWY WYGLĄD: DLA INŻYNIERÓW */
+        details.math-explainer { background: #0B1120; border: 1px solid var(--accent-blue); border-radius: 12px; margin-top: 40px; margin-bottom: 25px; overflow: hidden; box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15); transition: all 0.3s ease; }
+        details.math-explainer summary { padding: 20px 25px; font-weight: 700; cursor: pointer; color: #38bdf8; background: linear-gradient(90deg, rgba(14, 165, 233, 0.15) 0%, transparent 100%); list-style: none; display: flex; justify-content: space-between; align-items: center; outline: none; font-size: 1.05rem; }
+        details.math-explainer summary:hover { background: rgba(14, 165, 233, 0.25); }
+        details.math-explainer summary::before { content: '⚙️'; margin-right: 12px; font-size: 1.3rem; }
+        details.math-explainer summary::-webkit-details-marker { display: none; }
+        details.math-explainer summary::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; color: #38bdf8; }
+        details[open].math-explainer summary::after { transform: rotate(180deg); }
+        
+        .math-content { padding: 25px 30px; border-top: 1px dashed var(--accent-blue); font-size: 0.9rem; color: #cbd5e1; line-height: 1.7; background: rgba(0,0,0,0.3); }
+        .math-content h6 { color: #fff; margin: 25px 0 10px 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px;}
+        .math-content h6:first-child { margin-top: 0; }
+        .math-content ul { padding-left: 20px; margin-top: 5px; }
+        .math-content li { margin-bottom: 8px; }
+        .math-content strong { color: #38bdf8; }
+
+        /* Warianty Magazynu Upsell */
+        .upsell-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+        @media (max-width: 650px) { .upsell-grid { grid-template-columns: repeat(2, 1fr); } }
+        .upsell-card { background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .upsell-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .upsell-card.active { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); box-shadow: 0 0 15px var(--primary-glow); }
+        .upsell-badge { background: var(--accent-blue); color: #fff; font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; display: inline-block; margin-bottom: 8px; font-weight: 700; text-transform: uppercase;}
+        .upsell-badge.rec { background: var(--primary); }
+        .upsell-title { font-weight: 800; color: #fff; font-size: 1.1rem; margin-bottom: 4px; }
+        .upsell-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; }
+        .upsell-price { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .upsell-deposit { font-size: 0.85rem; color: var(--primary); font-weight: 700; margin-top: 5px; background: rgba(16,185,129,0.1); padding: 4px; border-radius: 4px; border: 1px dashed var(--primary); }
+        
+        .upsell-card.danger { border-color: rgba(239, 68, 68, 0.6); }
+        .upsell-card.danger:hover { border-color: var(--danger); transform: translateY(-3px); }
+        .upsell-card.danger.active { border-color: var(--danger); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+
+        /* STYLIZACJA PDF - Jasny profesjonalny grafitowy motyw dla oszczędności tuszu */
+        #print-report { display: none; }
+        
+        @media print {
+            :root { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background-color: #FFFFFF !important; color: #1E293B !important; padding: 0; margin: 0; font-family: 'Inter', sans-serif; }
+            .aieco-app { display: none !important; }
+            #print-report { display: block !important; padding: 30px; background-color: #FFFFFF !important; color: #1E293B !important; }
+            
+            .print-header { border-bottom: 2px solid #334155 !important; margin-bottom: 30px; padding-bottom: 15px; text-align: center; display: flex; flex-direction: column; align-items: center;}
+            .print-logo-img { height: 60px; object-fit: contain; margin-bottom: 10px; filter: invert(1); }
+            .print-header h2 { margin: 5px 0; font-size: 1.5rem; color: #0F172A !important; }
+            .print-header p { color: #475569 !important; font-size: 14px; margin: 0;}
+            
+            .pdf-advisor-msg { font-size: 14px; margin-bottom: 25px; line-height: 1.5; padding: 15px; background: #FFFFFF !important; border-left: 4px solid #334155 !important; border-radius: 8px; color: #1E293B !important; border: 1px solid #E2E8F0;}
+
+            .print-section { background: #FFFFFF !important; border: 1px solid #E2E8F0 !important; border-radius: 12px; padding: 25px; margin-bottom: 25px; page-break-inside: avoid; }
+            .print-section h3 { border-bottom: 1px dashed #CBD5E1 !important; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; color: #334155 !important; text-transform: uppercase; font-size: 1.2rem; }
+            .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; font-size: 14px; }
+            .print-grid p { margin: 10px 0; color: #475569 !important; display: flex; justify-content: space-between; border-bottom: 1px solid #F1F5F9; padding-bottom: 5px;}
+            .print-grid p strong { color: #0F172A !important; font-weight: 600; text-align: right;}
+            
+            .print-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align: center; }
+            .print-grid-3 div { border: 1px solid #E2E8F0; border-radius: 8px; padding: 15px; background: #F8FAFC; }
+            .print-grid-3 p { margin: 0 0 10px 0; color: #475569 !important; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .print-grid-3 strong { color: #10B981 !important; font-size: 1.4rem; font-weight: 800; display: block; }
+            
+            .lever-container { background: #F8FAFC !important; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #E2E8F0 !important;}
+            .lever-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; color: #0F172A !important;}
+            .timeline-wrap { display: flex; height: 25px; border-radius: 6px; overflow: hidden; margin-bottom: 5px; border: 1px solid #CBD5E1 !important;}
+            .t-labels { display: flex; justify-content: space-between; font-size: 10px; color: #64748B !important; }
+            
+            .disclaimer { font-size: 11px; color: #64748B !important; margin-top: 40px; text-align: justify; line-height: 1.5; border-top: 1px dashed #CBD5E1 !important; padding-top: 20px;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="aieco-app">
+    <div class="app-header">
+        <img src="image_b04cde.png" alt="Aieco Logo" class="app-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <h1 class="app-logo" style="display:none;">Aieco <span>⚡</span></h1>
+        <div class="app-subtitle">Inteligentny dobór systemów 4ECO</div>
+    </div>
+
+    <div class="stepper-nav">
+        <div class="stepper-progress" id="progress-bar"></div>
+        <div class="step-circle active" data-step="1" onclick="goToStep(1)">1<span class="step-label">Sytuacja</span></div>
+        <div class="step-circle" data-step="2" onclick="goToStep(2)">2<span class="step-label">Instalacja</span></div>
+        <div class="step-circle" data-step="3" onclick="goToStep(3)">3<span class="step-label">Potrzeby</span></div>
+        <div class="step-circle" data-step="4" onclick="goToStep(4)">4<span class="step-label">Finanse</span></div>
+        <div class="step-circle" data-step="5" onclick="goToStep(5)">5<span class="step-label">Wynik</span></div>
+    </div>
+
+    <div class="step-container">
+        
+        <div class="step-content active" id="step-1">
+            <h2 class="step-title">Jaka jest Twoja sytuacja?</h2>
+            <p class="step-desc">Wybierz odpowiednią opcję, abyśmy dopasowali audyt.</p>
+            
+            <div class="tiles-grid">
+                <div class="tile" onclick="selectType(this, 'none')">
+                    <div class="tile-icon">🏠</div>
+                    <h3 class="tile-title">Nie mam paneli PV</h3>
+                    <p class="tile-desc">Budujemy nowy system od zera (PV + Magazyn).</p>
+                </div>
+                <div class="tile" onclick="selectType(this, 'old_rules')">
+                    <div class="tile-icon">⚖️</div>
+                    <h3 class="tile-title">Mam PV (Stare zasady)</h3>
+                    <p class="tile-desc">Net-metering (opusty). Szukam magazynu energii.</p>
+                </div>
+                <div class="tile" onclick="selectType(this, 'new_rules')">
+                    <div class="tile-icon">📈</div>
+                    <h3 class="tile-title">Mam PV (Nowe zasady)</h3>
+                    <p class="tile-desc">Net-billing. Chcę magazyn, by nie tracić nadwyżek.</p>
+                </div>
+                <div class="tile" onclick="selectType(this, 'only_bat')">
+                    <div class="tile-icon">🔋</div>
+                    <h3 class="tile-title">Tylko Magazyn</h3>
+                    <p class="tile-desc">Brak miejsca na PV. Zarabianie na taryfie nocnej.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-content" id="step-2">
+            <h2 class="step-title">Parametry sprzętowe</h2>
+            <p class="step-desc">Aby dobrać odpowiedni system, podaj nam wymiary i specyfikację.</p>
+
+            <div id="tech-existing-pv" style="display:none;">
+                <div class="form-group">
+                    <label>Obecna moc modułów PV (kWp):</label>
+                    <span class="val-display" id="val-cur-pv">5.0 kWp</span>
+                    <input type="range" id="sl-cur-pv" min="2" max="30" step="0.1" value="5.0" oninput="updateVal('sl-cur-pv', 'val-cur-pv', ' kWp')">
+                </div>
+                <div class="form-group">
+                    <label>Obecna moc falownika AC (kW):</label>
+                    <span class="val-display" id="val-cur-inv">5.0 kW</span>
+                    <input type="range" id="sl-cur-inv" min="2" max="30" step="0.1" value="5.0" oninput="updateVal('sl-cur-inv', 'val-cur-inv', ' kW')">
+                </div>
+                <div class="form-group">
+                    <label>Twój obecny falownik to:</label>
+                    <select id="cur-inv-type" onchange="checkInvType()">
+                        <option value="string">Zwykły falownik (brak wejścia na magazyn)</option>
+                        <option value="hybrid">Falownik Hybrydowy (ma wejście na magazyn)</option>
+                    </select>
+                </div>
+                <div id="retrofit-info" class="alert-warn" style="display:none;">
+                    Masz zwykły falownik. Aieco zaproponuje wymianę na odpowiednio dobrany <strong>Falownik Hybrydowy</strong>.
+                </div>
+
+                <label class="toggle-box" style="margin-top: 25px;">
+                    <span>📈 Chcę rozbudować obecną instalację PV</span>
+                    <div class="switch"><input type="checkbox" id="toggle-expand-pv" onchange="toggleBox('box-expand-pv', this)"><span class="slider-toggle"></span></div>
+                </label>
+                <div id="box-expand-pv" class="conditional-box">
+                    <div class="form-group">
+                        <label>Docelowa moc po rozbudowie (kWp):</label>
+                        <span class="val-display" id="val-target-pv">Auto</span>
+                        <input type="range" id="sl-target-pv" min="0" max="40" step="0.5" value="0" oninput="updateAutoVal('sl-target-pv', 'val-target-pv', ' kWp')">
+                        <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw "Auto", a Aieco sam wyliczy, o ile paneli musisz powiększyć system na podstawie rachunków.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tech-new-pv" style="display:block;">
+                <div class="form-group">
+                    <label>Docelowa moc instalacji PV (kWp):</label>
+                    <span class="val-display" id="val-new-pv">Auto</span>
+                    <input type="range" id="sl-new-pv" min="0" max="30" step="0.5" value="0" oninput="updateAutoVal('sl-new-pv', 'val-new-pv', ' kWp')">
+                    <div class="alert-info">💡 <strong>Wskazówka:</strong> Zostaw wartość na "Auto (0)". Silnik Aieco sam dobierze odpowiednią ilość paneli na podstawie Twojego zużycia prądu.</div>
+                </div>
+            </div>
+
+            <div id="pv-dir-container" class="form-group" style="margin-top: 35px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
+                <label>Orientacja paneli względem słońca:</label>
+                <div class="choice-tiles" style="display: grid; grid-template-columns: 1fr 1fr;">
+                    <div class="choice-tile active pv-dir-tile" onclick="selectPvDir(this, 'south')">☀️ Południe</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east_west')">🌤️ Wschód - Zachód</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'east')">🌅 Tylko Wschód</div>
+                    <div class="choice-tile pv-dir-tile" onclick="selectPvDir(this, 'west')">🌇 Tylko Zachód</div>
+                </div>
+                <input type="hidden" id="pv-direction" value="south">
+            </div>
+
+            <div class="form-group" style="margin-top: 35px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
+                <label>Maksymalna moc przyłącza (Limit od sieci z faktury) (kW):</label>
+                <span class="val-display" id="val-conn">15 kW</span>
+                <input type="range" id="sl-conn" min="10" max="40" step="1" value="15" oninput="updateVal('sl-conn', 'val-conn', ' kW')">
+            </div>
+        </div>
+
+        <div class="step-content" id="step-3">
+            <h2 class="step-title">Zużycie i Potrzeby</h2>
+            <p class="step-desc">Podaj dane swojego dostawcy i wielkość zużycia.</p>
+
+            <div class="tiles-grid" style="grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Obecny Operator (OSD):</label>
+                    <select id="cur-operator">
+                        <option value="tauron">Tauron</option>
+                        <option value="pge">PGE</option>
+                        <option value="enea">Enea</option>
+                        <option value="energa">Energa</option>
+                        <option value="eon">E.ON</option>
+                        <option value="inny">Inny</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Obecna Taryfa:</label>
+                    <select id="cur-tariff">
+                        <option value="g11">G11 / C11 (Stała cena)</option>
+                        <option value="g12">G12 / C12 (Strefowa)</option>
+                        <option value="g12w">G12w / C12w (Strefowa + Weekend)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>System rozliczeń z siecią (OSD):</label>
+                <select id="cur-rules">
+                    <option value="net-billing">Net-billing (Nowe zasady rynkowe)</option>
+                    <option value="net-metering">Net-metering (Stare zasady, opusty)</option>
+                    <option value="none">Brak instalacji PV (Zakup 100% z sieci)</option>
+                </select>
+            </div>
+
+            <div class="input-switch" style="margin-top: 35px; border-top: 1px dashed var(--border-color); padding-top: 25px;">
+                <button type="button" id="btn-mode-kwh" class="active" onclick="setInputMode('kwh')">Znam roczne zużycie (kWh)</button>
+                <button type="button" id="btn-mode-bill" onclick="setInputMode('bill')">Znam rachunek (zł/msc)</button>
+            </div>
+
+            <div id="input-kwh" style="display:block;">
+                <div class="form-group">
+                    <label>Roczne zużycie bytowe (TV, AGD, Oświetlenie):</label>
+                    <span class="val-display" id="val-cons">4000 kWh</span>
+                    <input type="range" id="sl-cons" min="1500" max="15000" step="100" value="4000" oninput="updateVal('sl-cons', 'val-cons', ' kWh')">
+                </div>
+            </div>
+
+            <div id="input-bill" style="display:none; background: rgba(2, 132, 199, 0.05); border: 1px dashed var(--accent-blue); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label>Twój średni miesięczny rachunek za prąd:</label>
+                    <span class="val-display" id="val-bill">400 zł</span>
+                    <input type="range" id="sl-bill" min="100" max="2500" step="50" value="400" oninput="updateBillConversion()">
+                </div>
+                <div style="font-size: 0.85rem; color: var(--accent-blue); font-weight: 600;" id="val-bill-kwh">Kliknij suwak, aby oszacować zużycie.</div>
+            </div>
+
+            <label class="toggle-box">
+                <span>🔥 Ogrzewanie elektr. / Pompa Ciepła</span>
+                <div class="switch"><input type="checkbox" id="toggle-hp" onchange="toggleBox('box-hp', this)"><span class="slider-toggle"></span></div>
+            </label>
+            <div id="box-hp" class="conditional-box">
+                <div class="form-group">
+                    <label>Szacowane dodatkowe zużycie Pompy (kWh/rok):</label>
+                    <span class="val-display" id="val-hp-cons">3500 kWh</span>
+                    <input type="range" id="sl-hp-cons" min="1000" max="12000" step="100" value="3500" oninput="updateVal('sl-hp-cons', 'val-hp-cons', ' kWh')">
+                </div>
+            </div>
+
+            <label class="toggle-box">
+                <span>🚗 Samochód Elektryczny (EV)</span>
+                <div class="switch"><input type="checkbox" id="toggle-ev" onchange="toggleBox('box-ev', this)"><span class="slider-toggle"></span></div>
+            </label>
+            <div id="box-ev" class="conditional-box">
+                <div class="form-group">
+                    <label>Zużycie na ładowanie EV w domu (kWh/rok):</label>
+                    <span class="val-display" id="val-ev-cons">2500 kWh</span>
+                    <input type="range" id="sl-ev-cons" min="500" max="10000" step="100" value="2500" oninput="updateVal('sl-ev-cons', 'val-ev-cons', ' kWh')">
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 25px; padding-top: 25px; border-top: 1px dashed var(--border-color);">
+                <label>
+                    Kiedy domownicy zużywają najwięcej prądu? 
+                    <span class="info-btn" onclick="toggleBox('info-autocons', {checked: !document.getElementById('info-autocons').classList.contains('active')})">i</span>
+                </label>
+                
+                <div id="info-autocons" class="conditional-box" style="margin-top: 5px; margin-bottom: 15px; padding: 15px; background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
+                    <strong style="color: var(--primary); font-size: 0.9rem; display: block; margin-bottom: 5px;">Co to jest Autokonsumpcja?</strong>
+                    <p style="font-size: 0.8rem; margin: 0; line-height: 1.5;">To ułamek energii ze słońca, który dom wykorzystuje "na bieżąco", zanim trafi ona do sieci lub do magazynu. Prąd, którego nie pobierzesz z sieci (bo dom zjadł swój własny), generuje najwyższe oszczędności (~1,30 zł / kWh). Wybór odpowiedniego profilu pozwala naszemu kalkulatorowi precyzyjniej wyliczyć oszczędności.</p>
+                </div>
+
+                <div class="choice-tiles">
+                    <div class="choice-tile active usage-tile" onclick="selectUsageProfile(this, 'standard')">🌅 Rano i Wieczorem<br><small>Praca poza domem</small></div>
+                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'day')">☀️ Głównie w dzień<br><small>Praca zdalna / Dzieci</small></div>
+                    <div class="choice-tile usage-tile" onclick="selectUsageProfile(this, 'smart')">🤖 Smart Home<br><small>Automatyka urządzeń</small></div>
+                </div>
+                <input type="hidden" id="usage-profile" value="standard">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 35px;">
+                <label>Jaka strategia na zimę (dobór baterii) interesuje Cię najbardziej?</label>
+                <div class="choice-tiles" style="display: grid; grid-template-columns: 1fr 1fr;">
+                    <div class="choice-tile active winter-tile" onclick="selectWinterStrategy(this, 'eco')">🛡️ Ochrona w szczycie<br><small>Bateria na najdroższe godziny</small></div>
+                    <div class="choice-tile winter-tile" onclick="selectWinterStrategy(this, 'max')">🔋 Pełna niezależność<br><small>Bateria na całą dobę z taryfy nocnej</small></div>
+                </div>
+                <input type="hidden" id="winter-strategy" value="eco">
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="form-group">
+                <label>Czy potrzebujesz zasilania awaryjnego (Backupu)?</label>
+                <div class="choice-tiles">
+                    <div class="choice-tile" onclick="selectBackup(this, 'yes')">Tak, to ważne</div>
+                    <div class="choice-tile active" onclick="selectBackup(this, 'no')">Nie potrzebuję</div>
+                    <div class="choice-tile" onclick="selectBackup(this, 'info')">Co to jest?</div>
+                </div>
+                <div id="backup-info" class="alert-info" style="display:none; background: rgba(2, 132, 199, 0.1); border-color: var(--accent-blue); color: #BAE6FD;">
+                    <strong>Zasilanie awaryjne (EPS):</strong> Pozwala na korzystanie z prądu z magazynu nawet podczas wyłączeń i awarii sieci (tzw. blackoutu). Wymaga odpowiedniego falownika i modyfikacji rozdzielnicy.
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="step-content" id="step-4">
+            <h2 class="step-title">Finanse i Dotacje</h2>
+            <p class="step-desc">Wyceń wygenerowany system i dostosuj budżet.</p>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Docelowa Taryfa (Plan zarabiania na baterii):</label>
+                <select id="target-tariff" onchange="checkTariff()">
+                    <option value="g12">G12 / G12w (Tania noc) - Dźwignia bateryjna</option>
+                    <option value="g11">G11 (Stała cena)</option>
+                </select>
+            </div>
+
+            <div id="tariff-warning" class="alert-warn" style="display:none; margin-bottom: 35px;">
+                ⚠️ <strong>Ważna uwaga:</strong> Zmiana taryfy na stałą (G11) znacznie ograniczy potencjał finansowy systemu Aieco. W taryfie G11 system nie będzie mógł kupować taniego prądu w nocy i sprzedawać go z zyskiem w szczytach. Zdecydowanie rekomendujemy pozostanie przy strefowej taryfie G12/G12w, by zmaksymalizować zyski!
+            </div>
+
+            <div class="form-group" style="display: none;">
+                <input type="number" id="sl-capex" value="" oninput="updateFinance()">
+            </div>
+
+            <label class="toggle-box" style="border-top: 1px dashed var(--border-color); padding-top: 25px;">
+                <span>💶 Chcę skorzystać z dotacji Mój Prąd</span>
+                <div class="switch"><input type="checkbox" id="toggle-sub" onchange="toggleBox('box-sub', this); updateFinance();" checked><span class="slider-toggle"></span></div>
+            </label>
+            <div id="box-sub" class="conditional-box active">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Kwota Dotacji:</label>
+                    <span class="val-display" id="val-sub" style="color:var(--primary);">16 000 zł</span>
+                    <input type="range" id="sl-sub" min="0" max="16000" step="500" value="16000" oninput="markSubChanged();">
+                    <div class="alert-info" style="font-size: 0.75rem; margin-top:15px;" id="alert-sub-info">🔒 Aieco automatycznie wylicza bezpieczną dotację. Limit dla Twojej kwoty to: <span id="val-limit-sub">16 000</span> zł.</div>
+                    <div class="alert-warn" style="font-size: 0.75rem; margin-top:10px; display:none;" id="alert-sub-netbilling">⚠️ <strong>Ważne:</strong> Ponieważ jesteś na starych zasadach (opusty), warunkiem otrzymania dotacji jest <strong>obowiązkowe przejście na system Net-billing</strong>. Aieco automatycznie uwzględni tę zmianę w wynikach.</div>
+                </div>
+            </div>
+
+            <label class="toggle-box" style="margin-top: 15px;">
+                <span>💰 Odliczam Ulgę Termomodernizacyjną</span>
+                <div class="switch"><input type="checkbox" id="toggle-tax" onchange="toggleBox('box-tax', this)" checked><span class="slider-toggle"></span></div>
+            </label>
+            <div id="box-tax" class="conditional-box active">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Określ swój próg podatkowy:</label>
+                    <div class="choice-tiles">
+                        <div class="choice-tile active tax-tile" onclick="selectTax(this, 0.12)">12%<br><small>I próg</small></div>
+                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.19)">19%<br><small>Liniowy</small></div>
+                        <div class="choice-tile tax-tile" onclick="selectTax(this, 0.32)">32%<br><small>II próg</small></div>
+                    </div>
+                    <input type="hidden" id="tax-rate" value="0.12">
+                 </div>
+            </div>
+        </div>
+
+        <div class="step-content" id="step-5">
+            
+            <div id="lead-gate" style="display: block; text-align: center;">
+                <h2 class="step-title">Audyt został przygotowany! ⚡</h2>
+                <p class="step-desc">Dowiedz się, jaki sprzęt powinieneś zainstalować. Podaj namiar na siebie, aby bezpłatnie odblokować wyniki i sprawdzić techniczne warianty instalacji.</p>
+                
+                <div style="background: var(--bg-input); padding: 30px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 400px; margin: 0 auto; text-align: left;">
+                    <div class="form-group">
+                        <label>Twój adres E-mail:</label>
+                        <input type="email" id="lead-email" placeholder="np. jan.kowalski@email.pl" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numer telefonu:</label>
+                        <input type="tel" id="lead-phone" placeholder="np. 123 456 789" required>
+                    </div>
+                    <button type="button" class="btn btn-next" style="width: 100%; margin: 0; margin-top: 10px;" onclick="unlockResults()">Odbierz wynik audytu</button>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 15px;">Klikając, wyrażasz zgodę na kontakt z naszym doradcą w celu przedstawienia wyceny i szczegółów technicznych dopasowanego systemu.</p>
+                </div>
+            </div>
+
+	    <div style="margin-top: 25px;">
+		    [contact-form-7 id="123" title="AiEco Lead"]
+            </div>
+
+            <div id="audit-results" style="display: none;">
+                <h2 class="step-title">Podsumowanie Audytu</h2>
+                <p class="step-desc">Oto precyzyjne zestawienie wyliczeń z inteligentnym magazynem.</p>
+
+                <div id="personalized-message" class="advisor-message">
+                </div>
+                
+                <div class="advisor-message" style="background: var(--bg-input); border-left: 4px solid #F59E0B; box-shadow: none; border-top: 1px solid var(--border-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                    <h4 style="color: #F59E0B; margin-top: 0; margin-bottom: 15px; font-size: 1.15rem;">🔍 Analiza: Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h4>
+                    
+                    <p style="margin-bottom: 5px; color: #FCA5A5;"><strong>✖ Twój obecny problem (Zwykła fotowoltaika):</strong></p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0; line-height: 1.6;">
+                        W godzinach południowych (zazwyczaj 11:00 - 14:00), gdy Twoje panele produkują najwięcej prądu, energia nie jest na bieżąco zużywana w domu. Jest "wypychana" do sieci po drastycznie niskich, rynkowych stawkach RCE (spadających często poniżej <strong>0,16 zł / kWh</strong>, a czasem nawet do zera!). Wieczorem (17:00 - 21:00), gdy wracasz do domu, włączasz TV, pralkę i oświetlenie – panele już nie produkują. Musisz odkupić energię od operatora w najdroższym możliwym momencie, płacąc nawet do <strong>1,30 zł / kWh</strong>. System systematycznie pomniejsza Twoje oszczędności.
+                    </p>
+                    
+                    <p style="margin-bottom: 5px; margin-top: 20px; color: var(--primary);"><strong>✔ Rozwiązanie: Inteligentny magazyn Aieco (EMS)</strong></p>
+                    <ul style="font-size: 0.9rem; color: var(--text-muted); padding-left: 20px; line-height: 1.6; margin-top: 0;">
+                        <li><strong>Blokada taniej sprzedaży:</strong> W południe nadwyżka ze słońca nie trafia już do sieci za "grosze". Zamiast tego całkowicie ładuje Twój magazyn energii.</li>
+                        <li><strong>Darmowy prąd wieczorem:</strong> Od 17:00 do 22:00 Twój dom odłącza się od drogiej sieci. Omijasz wysoką stawkę <strong>1,30 zł / kWh</strong> i zasilasz dom w 100% zmagazynowaną darmową energią.</li>
+                        <li><strong>Aktywny handel (Letni Arbitraż):</strong> Gdy bateria jest pełna w słoneczny dzień, system wstrzymuje się z eksportem do sieci. Czeka na wieczorne piki cen na giełdzie, by automatycznie sprzedać prąd za najwyższą kwotę (nawet 1,05 zł / kWh).</li>
+                        <li><strong>Zimowa Tarcza (Taryfa G12):</strong> Gdy zimą słońca jest mało, sztuczna inteligencja o godzinie 01:00 w nocy pobiera tani prąd (za ok. <strong>0,61 zł</strong>). Wieczorem używa go w domu, więc nie kupujesz w ogóle prądu w drogich szczytach!</li>
+                    </ul>
+                </div>
+
+                <div class="summary-section" style="background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
+                    <h4 style="color: var(--primary); border-bottom-color: rgba(16, 185, 129, 0.3);">Twój Profil Energetyczny</h4>
+                    <div class="flex-between"><span>Średniodobowe zużycie (ZIMA):</span><strong id="res-daily-winter">-</strong></div>
+                    <div class="flex-between"><span>Średniodobowe zużycie (LATO):</span><strong id="res-daily-summer">-</strong></div>
+                    <div class="flex-between" style="border-top: 1px dashed var(--primary-glow); padding-top: 10px; margin-top: 5px;">
+                        <span>Zalecana pojemność magazynu na zimę:</span><strong id="res-rec-bat" style="color: #F59E0B; font-size: 1.2rem;">-</strong>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; margin-bottom: 0;">Na podstawie wyliczonego zapotrzebowania zimowego, nasz system w tle zaproponował optymalny bufor magazynowy. Taka pojemność zapewni Ci pełne zasilanie w najdroższych godzinach szczytowych bez konieczności dobierania drogiego prądu z sieci.</p>
+                </div>
+
+                <div class="summary-section" style="background: rgba(2, 132, 199, 0.05); border-color: var(--accent-blue);">
+                    <h4 style="color: var(--accent-blue); border-bottom-color: rgba(2, 132, 199, 0.3);">Wybierz Pojemność Magazynu Energii</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; text-align: center;">Zwiększenie magazynu poszerza możliwości zysku na tarczy RCE. Kliknij na kafelek poniżej, aby sprawdzić inne opcje.</p>
+                    
+                    <h5 style="color: #fff; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">⚡ Opcja 1: System 4ECO</h5>
+                    <div class="upsell-grid" id="bat-variants-grid"></div>
+
+                    <h5 style="color: #F59E0B; margin-top: 25px; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 5px;">⚡ Opcja 2: System Solis</h5>
+                    <div class="upsell-grid" id="solis-variants-grid"></div>
+                </div>
+
+                <div class="summary-section">
+                    <h4>Specyfikacja Głównego Systemu</h4>
+                    <div class="flex-between"><span>Sugerowana Moc PV:</span><strong id="res-pv">-</strong></div>
+                    <div class="flex-between">
+                        <span>Falownik / Logika:</span>
+                        <div style="text-align:right;">
+                            <strong id="res-inv">-</strong><br>
+                            <span style="font-size: 0.7rem; color: var(--primary);">*Zoptymalizowano pod kątem orientacji i magazynu</span>
+                        </div>
+                    </div>
+                    <div class="flex-between"><span>Magazyn Energii:</span><strong id="res-bat">-</strong></div>
+                    <div class="flex-between"><span>Moduł Komunikacji:</span><strong id="res-logger" style="color:var(--primary);">-</strong></div>
+                    <div class="flex-between"><span>Zasilanie awaryjne:</span><strong id="res-backup" style="color:var(--accent-blue);">-</strong></div>
+                    <div class="flex-between"><span>Docelowa Taryfa:</span><strong id="res-grid">-</strong></div>
+                    
+                    <div class="flex-between total-row" style="margin-top: 15px;">
+                        <span style="color: var(--primary);">Dokładną wycenę systemu prześlemy mailowo!</span>
+                    </div>
+                </div>
+
+                <h4 style="color:#fff; margin-bottom:10px; margin-top:30px;">Zyski Oszacowane Systemem</h4>
+                <div class="grid-3">
+                    <div class="sav-box">
+                        <span>Oszczędności (1 Rok)</span>
+                        <strong id="res-sav-1">0 zł</strong>
+                    </div>
+                    <div class="sav-box">
+                        <span>Oszczędności (5 Lat)</span>
+                        <strong id="res-sav-5">0 zł</strong>
+                    </div>
+                    <div class="sav-box">
+                        <span>Oszczędności (15 Lat)</span>
+                        <strong id="res-sav-15">0 zł</strong>
+                    </div>
+                </div>
+
+                <div id="dynamic-recommendation-note" class="summary-section" style="margin-top: 25px; background: rgba(16, 185, 129, 0.05); border-color: var(--primary);">
+                </div>
+
+                <details class="math-explainer">
+                    <summary>Zobacz szczegółowe wyjaśnienie obliczeń</summary>
+                    <div class="math-content">
+                        <p style="margin-top:0;">Algorytm analityczny bazuje na historycznych profilach zużycia OSD oraz uśrednionych stawkach giełdowych RCEm i taryfach strefowych G12/G12w. Wykorzystujemy modelowanie różnicowe (zima/lato), aby precyzyjnie zasymulować pracę algorytmów sztucznej inteligencji Aieco EMS.</p>
+                        
+                        <h6><span style="font-size: 1.2rem;">📊</span> 1. Podział sezonowy i profilowanie (Zima vs Lato)</h6>
+                        <ul>
+                            <li>Zapotrzebowanie dzielone jest na 185 dni okresu letniego (produkcyjnego) oraz 180 dni okresu grzewczego (zimowego).</li>
+                            <li>Jeśli obiekt posiada pompę ciepła, krzywa obciążenia przesuwa się drastycznie: aż 80% rocznego zużycia przypisywane jest na miesiące zimowe, co determinuje wymaganą pojemność magazynu.</li>
+                        </ul>
+
+                        <h6><span style="font-size: 1.2rem;">🔄</span> 2. Autokonsumpcja (Bieżące Zużycie)</h6>
+                        <ul>
+                            <li>Wyliczenia bazują na zadeklarowanym profilu życia: Praca poza domem = 20%, Praca zdalna = 35%, Smart Home (przesuwanie zużycia na godziny południowe) = 45%.</li>
+                            <li>Autokonsumpcja jest potężnym generatorem oszczędności, ponieważ 1 kWh prądu użytego ze słońca na bieżąco to ominięcie kosztu dystrybucji ok. 1.09 zł - 1.30 zł. Energia niewykorzystana trafia najpierw do magazynu.</li>
+                        </ul>
+
+                        <h6><span style="font-size: 1.2rem;">☀️</span> 3. Arbitraż Letni (RCE)</h6>
+                        <ul>
+                            <li>Szacujemy letnią nadwyżkę w oparciu o wielkość PV oraz orientację względem słońca.</li>
+                            <li>Nadwyżka w południe w 100% ładuje magazyn. To, co się "przeleje" (przy pełnej baterii), oddawane jest po niskiej stawce RCE (ok. 0.16 zł/kWh).</li>
+                            <li>Niewykorzystana w ciągu dnia bateria ładuje się nocą w taniej taryfie i sprzedaje prąd w wieczornym szczycie giełdowym (zysk ok. 0.44 zł/kWh netto).</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">❄️</span> 4. Tarcza Zimowa (G12)</h6>
+                        <ul>
+                            <li>Szacujemy Twoje zużycie w godzinach drogiego szczytu G12 (15:00 - 22:00).</li>
+                            <li>Algorytm dobiera magazyn na podstawie wyliczonego średniodobowego zapotrzebowania zimowego. Ewentualne braki zliczane są po karnej stawce szczytowej.</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">💰</span> 5. Koszty i Dotacje</h6>
+                        <ul>
+                            <li>Kalkulacja przewiduje 4-procentową inflację cen energii w ujęciu rocznym.</li>
+                            <li>Rachunek w modelu Aieco zakłada <strong>opłaty stałe (abonamentowe)</strong> w wysokości ok. 400 zł rocznie, niepodlegające pokryciu z wirtualnego depozytu (zgodnie z przepisami prawa energetycznego).</li>
+                            <li>Wbudowany skrypt "Mój Prąd" restrykcyjnie weryfikuje minimalny warunek 10 kWh dla magazynu, dopasowując procentowy udział dotacji do kosztów kwalifikowanych.</li>
+                        </ul>
+                        
+                        <h6><span style="font-size: 1.2rem;">🤖</span> 6. Automatyka Aieco EMS (SSO)</h6>
+                        <ul>
+                            <li>Rozwiązania hybrydowe zintegrowane są z chmurą analityczną decydującą w czasie rzeczywistym o handlu energią.</li>
+                            <li>Koszty utrzymania platformy: w wariancie 4ECO wyceniono je na 2 zł/mc za każdy 1 kWh pojemności baterii, w wariancie Solis jest to zryczałtowane 19,90 zł/mc. Opłaty zostały z góry <strong>odjęte od prezentowanych zysków</strong> (model netto).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <div class="section-divider"></div>
+
+                <button type="button" class="btn btn-pdf" onclick="generatePDF()">📄 Pobierz Podsumowanie (PDF)</button>
+            </div>
+        </div>
+
+        <div class="footer-nav">
+            <button type="button" id="btn-back" class="btn btn-prev" style="display: none;" onclick="goToStep(currentStep - 1)">Wstecz</button>
+            <button type="button" id="btn-next" class="btn btn-next" style="display: none;" onclick="goToStep(currentStep + 1)">Dalej ➔</button>
+            <button type="button" id="btn-calc" class="btn btn-next" style="display: none;" onclick="goToStep(5)">Wynik Audytu ⚡</button>
+        </div>
+    </div>
+</div>
+
+<div id="print-report">
+    <div class="print-header">
+        <div class="logo-container">
+            <h1 style="font-size: 2.8rem; font-weight: 800; color: #334155 !important;">Aieco <span style="color: #10B981 !important;">⚡</span></h1>
+        </div>
+        <h2>PODSUMOWANIE AUDYTU OZE</h2>
+        <p>Wygenerowano: <span id="print-date"></span></p>
+    </div>
+
+    <div id="pdf-personalized-message" class="pdf-advisor-msg"></div>
+
+    <div class="pdf-advisor-msg" style="background: #FAFAF9 !important; border-left-color: #F59E0B !important;">
+        <h4 style="color: #B45309 !important; margin-top: 0; margin-bottom: 10px; font-size: 16px;">🔍 Gdzie uciekają Twoje pieniądze i jak to zmienimy?</h4>
+        <p style="margin: 0 0 5px 0; font-size: 12px;"><strong>✖ Twój obecny problem (Tradycyjne zasady):</strong> W południe, kiedy słońce najmocniej świeci, energia oddawana jest do sieci po zaniżonych rynkowych stawkach (nierzadko poniżej 0,16 zł / kWh). Kiedy wracasz wieczorem z pracy i zapotrzebowanie jest największe (godziny 17:00 - 21:00), musisz odkupić energię od operatora za nawet 1,30 zł / kWh.</p>
+        <p style="margin: 10px 0 5px 0; font-size: 12px;"><strong>✔ Rozwiązanie z inteligentnym systemem EMS:</strong></p>
+        <ul style="font-size: 12px; margin-top: 0; padding-left: 20px;">
+            <li>Słońce ze środka dnia zasila w 100% Twój akumulator, a nie sieć za ułamek ceny.</li>
+            <li>W godzinach drogiego szczytu wieczornego (do 1,30 zł / kWh) zasilasz dom całkowicie darmową energią zmagazynowaną za dnia.</li>
+            <li>Latem: system sprzeda do sieci ewentualny nadmiar dopiero wieczorem, kiedy stawki na giełdzie są najwyższe (nawet ok. 1,05 zł).</li>
+            <li>Zimą: jeśli brakuje słońca, w nocy system wczytuje tani prąd (za ok. 0,61 zł), po to by oddać Ci go w najdroższym szczycie dnia!</li>
+        </ul>
+    </div>
+
+    <div class="print-section">
+        <h3>1. Profil Energetyczny i Proponowany System</h3>
+        <div class="print-grid">
+            <div>
+                <p>Średniodobowe zużycie (ZIMA): <strong id="pdf-daily-winter">-</strong></p>
+                <p>Średniodobowe zużycie (LATO): <strong id="pdf-daily-summer">-</strong></p>
+                <div style="margin: 10px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #E2E8F0; padding-bottom: 5px;">
+                    <span style="color: #475569 !important;">Zalecana Pojemność Magazynu:</span>
+                    <div style="text-align: right;">
+                        <strong id="pdf-rec-bat" style="color: #F59E0B !important;">-</strong><br>
+                        <span style="font-size: 10px; color: #10B981 !important;">*Na bazie profilu zimowego</span>
+                    </div>
+                </div>
+                <p>Moc Instalacji PV: <strong id="p-pv">-</strong></p>
+            </div>
+            <div>
+                <p>Model Falownika: <strong id="p-inv">-</strong></p>
+                <p>Wybrany Magazyn: <strong id="p-bat">-</strong></p>
+                <p>Zasilanie awaryjne (EPS): <strong id="p-backup">-</strong></p>
+                <p>Zarządzanie / Moduł: <strong id="p-logger" style="color: #10B981 !important;">-</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="print-section">
+        <h3>2. Analiza Ekonomiczna </h3>
+        <div class="print-grid-3">
+            <div>
+                <p>1 Rok</p>
+                <strong class="print-summary-val" id="p-roi">-</strong>
+            </div>
+            <div>
+                <p>5 Lat</p>
+                <strong class="print-summary-val" id="p-sav-5">-</strong>
+            </div>
+            <div>
+                <p>15 Lat</p>
+                <strong class="print-summary-val" id="p-total-sav">-</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="print-section" id="pdf-dynamic-recommendation-note" style="background: #FAFAFA !important; border-color: #10B981 !important; border-width: 2px !important;">
+    </div>
+
+    <div class="disclaimer">
+        <strong>NOTA PRAWNA I METODOLOGIA:</strong> Powyższa symulacja ma charakter analityczno-poglądowy. Wyliczenia bazują na profilach statystycznych zużycia, uśrednionych stawkach giełdowych RCEm oraz taryfach operatorów (OSD). Zestawienie uwzględnia zaawansowane algorytmy zarządzania systemem Aieco EMS, lecz <strong>nie stanowi oferty handlowej</strong> w rozumieniu art. 66 § 1 Kodeksu Cywilnego. Ostateczny dobór mocy, pojemności oraz precyzyjna wycena wymagają potwierdzenia podczas bezpłatnego audytu technicznego przeprowadzonego przez autoryzowanego doradcę.
+    </div>
+</div>
+
+<script>
+    // Narzędzie zabezpieczające modyfikacje DOM
+    const setDisplay = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
+    const setHtml = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+
+    let currentStep = 1;
+    const totalSteps = 5;
+    let selectedType = null;
+    let inputMode = 'kwh';
+    let subManuallyChanged = false;
+    let wantsBackup = false;
+    let currentNetInvest = 0;
+    let currentMonthlySavings = 0;
+    let userForcedBatCap = null;
+    let isUnlocked = false;
+    
+    let currentBrand = '4eco';
+
+    const PRICE_LIST = {
+        inv: [
+            { p: 0, price: 0, name: "Brak" },
+            { p: 3, price: 6860, name: "HESP 3" },
+            { p: 5, price: 6986, name: "HESP 5" },
+            { p: 6, price: 7126, name: "HESP 6" },
+            { p: 8, price: 8106, name: "HESP 8" },
+            { p: 10, price: 8106, name: "HESP 10" },
+            { p: 12, price: 8106, name: "HESP 12" }
+        ],
+        bat: [
+            { cap: 0, price: 0, name: "Brak" },
+            { cap: 5, price: 4046, name: "SE05B" },
+            { cap: 10, price: 7406, name: "SE10B" },
+            { cap: 15, price: 8540, name: "SE15B" },
+            { cap: 16, price: 9520, name: "SE16B PRO" },
+            { cap: 20, price: 14812, name: "2x SE10B" },
+            { cap: 25, price: 15946, name: "SE10B + SE15B" },
+            { cap: 30, price: 17080, name: "2x SE15B" },
+            { cap: 32, price: 19040, name: "2x SE16B PRO" }
+        ],
+        solis_inv: [
+            { p: 0, price: 0, name: "Brak" },
+            { p: 5, price: 3350, name: "Solis 5kW HV" },
+            { p: 8, price: 3500, name: "Solis 8kW HV" },
+            { p: 10, price: 3650, name: "Solis 10kW HV" },
+            { p: 12, price: 5700, name: "Solis 12kW LV" } 
+        ],
+        solis_bat: [
+            { cap: 0, price: 0, name: "Brak" },
+            { cap: 5, price: 6650, name: "SunESS-H 5kWh" },
+            { cap: 10, price: 9950, name: "SunESS-H 10kWh" },
+            { cap: 15, price: 13250, name: "SunESS-H 15kWh" },
+            { cap: 20, price: 16550, name: "SunESS-H 20kWh" },
+            { cap: 25, price: 16550 + 6650, name: "SunESS-H 25kWh" }, 
+            { cap: 30, price: 16550 + 9950, name: "SunESS-H 30kWh" }  
+        ]
+     };
+
+    function formatNum(val) { return Math.round(val || 0).toLocaleString('pl-PL') + " zł"; }
+
+    function updateVal(sId, dId, suf, formatNumber = false) {
+         let v = document.getElementById(sId).value;
+         setText(dId, (formatNumber ? Number(v).toLocaleString('pl-PL') : v) + suf);
+     }
+
+    function updateAutoVal(sId, dId, suf) {
+         let v = document.getElementById(sId).value;
+         setText(dId, v == 0 ? "Auto" : v + suf);
+     }
+
+    function toggleBox(bId, c) {
+         const box = document.getElementById(bId);
+         if(c && c.checked !== undefined) {
+            if(c.checked){
+                 if(box) box.classList.add('active');
+                 if(bId === 'box-sub') updateFinance();
+             } else {
+                 if(box) box.classList.remove('active');
+             }
+         } else {
+             if(box) box.classList.toggle('active');
+         }
+     }
+
+    function checkInvType() {
+         setDisplay('retrofit-info', document.getElementById('cur-inv-type').value === 'string' ? 'block' : 'none');
+     }
+
+    function setInputMode(mode) {
+        inputMode = mode;
+        const btnKwh = document.getElementById('btn-mode-kwh');
+        const btnBill = document.getElementById('btn-mode-bill');
+        if(btnKwh) btnKwh.classList.toggle('active', mode === 'kwh');
+        if(btnBill) btnBill.classList.toggle('active', mode === 'bill');
+        setDisplay('input-kwh', mode === 'kwh' ? 'block' : 'none');
+        setDisplay('input-bill', mode === 'bill' ? 'block' : 'none');
+        if(mode === 'bill') updateBillConversion();
+    }
+
+    function updateBillConversion() {
+        const bill = parseFloat(document.getElementById('sl-bill').value) || 0;
+        let kwh = 0;
+        
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+        
+        let curPvEl = document.getElementById('sl-cur-pv');
+        let curPV = curPvEl ? parseFloat(curPvEl.value) || 0 : 0;
+        
+        if (selectedType === 'none' || selectedType === 'only_bat' || !selectedType) {
+            kwh = Math.max(0, ((bill * 12) - 400) / 1.09);
+        } else {
+            let netGridPurchaseKwh = Math.max(0, ((bill * 12) - 400) / 1.09);
+            let annualPvYield = curPV * 950;
+            let selfConsKwh = annualPvYield * selfConsRate;
+            let exportedKwh = annualPvYield - selfConsKwh;
+            let recoveredKwhValue = (selectedType === 'old_rules') ? (exportedKwh * 0.8) : (exportedKwh * 0.25);
+            kwh = netGridPurchaseKwh + selfConsKwh + recoveredKwhValue;
+        }
+        setText('val-bill', bill + " zł");
+        setText('val-bill-kwh', `Szacowane roczne zużycie domowe: ~${Number(Math.round(kwh)).toLocaleString('pl-PL')} kWh`);
+    }
+
+    function selectBackup(element, val) {
+        let sibs = element.parentNode.children;
+        for(let i=0; i<sibs.length; i++) sibs[i].classList.remove('active');
+        element.classList.add('active');
+        setDisplay('backup-info', val === 'info' ? 'block' : 'none');
+        if(val !== 'info') wantsBackup = (val === 'yes');
+    }
+
+    function selectTax(el, rate) {
+         document.querySelectorAll('.tax-tile').forEach(x => x.classList.remove('active'));
+         el.classList.add('active');
+         document.getElementById('tax-rate').value = rate;
+     }
+
+    function selectPvDir(el, dir) {
+        document.querySelectorAll('.pv-dir-tile').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('pv-direction').value = dir;
+    }
+
+    function selectUsageProfile(el, profile) {
+        document.querySelectorAll('.usage-tile').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('usage-profile').value = profile;
+        if(inputMode === 'bill') updateBillConversion();
+    }
+
+    function selectWinterStrategy(el, strat) {
+        document.querySelectorAll('.winter-tile').forEach(x => x.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('winter-strategy').value = strat;
+    }
+
+    function markSubChanged() { subManuallyChanged = true; updateVal('sl-sub', 'val-sub', ' zł', true); }
+
+    function checkTariff() {
+        const val = document.getElementById('target-tariff').value;
+        setDisplay('tariff-warning', val === 'g11' ? 'block' : 'none');
+    }
+
+    function selectType(el, type) {
+        selectedType = type;
+        userForcedBatCap = null;
+        currentBrand = '4eco'; 
+        
+         document.querySelectorAll('.tile').forEach(t => t.classList.remove('selected'));
+         el.classList.add('selected');
+        
+        if(type === 'none' || type === 'only_bat') {
+            setDisplay('tech-existing-pv', 'none');
+            setDisplay('tech-new-pv', (type === 'only_bat') ? 'none' : 'block');
+        } else {
+            setDisplay('tech-existing-pv', 'block');
+            setDisplay('tech-new-pv', 'none');
+        }
+
+        if(type === 'only_bat') {
+            setDisplay('pv-dir-container', 'none');
+        } else {
+            setDisplay('pv-dir-container', 'block');
+        }
+        
+        const rS = document.getElementById('cur-rules');
+        if(rS) {
+            if(type === 'none' || type === 'only_bat') rS.value = 'none';
+            else if(type === 'old_rules') rS.value = 'net-metering';
+            else if(type === 'new_rules') rS.value = 'net-billing';
+        }
+        
+        subManuallyChanged = false;
+        if(inputMode === 'bill') updateBillConversion();
+        setTimeout(() => goToStep(2), 300);
+    }
+    
+    function getEnergyAndProfit(cap, sizing) {
+        let vBatUsable = cap * 0.9;
+        let energyCost = 0;
+        let profit = 0;
+
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+
+        if (selectedType === 'only_bat') {
+            let dailyWinterCons = sizing.winterCons / 180;
+            let dailyPenaltyWinter = Math.max(0, sizing.winterEveningDemand - vBatUsable);
+            let winterPenaltyCost = dailyPenaltyWinter * 180 * (1.30 - 0.61);
+            let emptyBatWinter = Math.max(0, vBatUsable - sizing.winterEveningDemand);
+            let arbWinter = emptyBatWinter * 0.44 * 180;
+
+            let dailySummerCons = sizing.summerCons / 185;
+            let arbSummer = vBatUsable * 0.44 * 185;
+            
+            energyCost = (dailyWinterCons * 180 * 0.61) + winterPenaltyCost + (dailySummerCons * 185 * 0.61);
+            profit = arbWinter + arbSummer;
+        } else {
+            let dailySummerYield = sizing.targetPV * sizing.yieldMult;
+            let dailySummerCons = sizing.summerCons / 185;
+            
+            let dailySummerSelfCons = Math.min(dailySummerCons, dailySummerYield * selfConsRate); 
+            let summerExcess = Math.max(0, dailySummerYield - dailySummerSelfCons);
+            let summerGridPurchase = Math.max(0, dailySummerCons - dailySummerSelfCons);
+            
+            let storedForRCE = Math.min(summerExcess, vBatUsable);
+            let spillToGrid = Math.max(0, summerExcess - storedForRCE);
+            let emptyBatSummer = Math.max(0, vBatUsable - storedForRCE);
+            
+            let dailyRceProfit = (storedForRCE * 1.05) + (spillToGrid * 0.16) + (emptyBatSummer * 0.44);
+            let totalSummerRceProfit = dailyRceProfit * 185; 
+
+            let summerBaseCost = summerGridPurchase * 185 * 0.61;
+
+            let dailyWinterYield = sizing.targetPV * 1.0;
+            let dailyWinterCons = sizing.winterCons / 180;
+            
+            let dailyWinterSelfCons = Math.min(dailyWinterCons, dailyWinterYield);
+            let winterGridPurchaseDaily = Math.max(0, dailyWinterCons - dailyWinterSelfCons);
+            
+            let winterBaseCost = winterGridPurchaseDaily * 180 * 0.61;
+            
+            let dailyPenaltyWinter = Math.max(0, sizing.winterEveningDemand - vBatUsable);
+            let winterPenaltyCost = dailyPenaltyWinter * 180 * (1.30 - 0.61);
+            let emptyBatWinter = Math.max(0, vBatUsable - sizing.winterEveningDemand);
+            let totalWinterArbProfit = emptyBatWinter * 0.44 * 180;
+
+            energyCost = winterBaseCost + winterPenaltyCost + summerBaseCost;
+            profit = totalSummerRceProfit + totalWinterArbProfit;
+        }
+        return { energyCost, profit };
+    }
+
+    function getSystemSizingAndCost(forcedBatCap = null, overrideBrand = null) {
+        let brand = overrideBrand || currentBrand;
+        
+        let slConsEl = document.getElementById('sl-cons');
+        let slBillEl = document.getElementById('sl-bill');
+        let slConsVal = slConsEl ? parseFloat(slConsEl.value) : 0;
+        let slBillVal = slBillEl ? parseFloat(slBillEl.value) : 0;
+        let consBase = 0;
+
+        let usageProfileEl = document.getElementById('usage-profile');
+        let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+        let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+        
+        let curPvEl = document.getElementById('sl-cur-pv');
+        let curPV = curPvEl ? parseFloat(curPvEl.value) : 0;
+
+        if (inputMode === 'kwh') {
+            consBase = slConsVal;
+        } else {
+            if (selectedType === 'none' || selectedType === 'only_bat') {
+                consBase = Math.max(0, ((slBillVal * 12) - 400) / 1.09);
+            } else {
+                let netGridPurchaseKwh = Math.max(0, ((slBillVal * 12) - 400) / 1.09);
+                let annualPvYield = curPV * 950;
+                let selfConsKwh = annualPvYield * selfConsRate;
+                let exportedKwh = annualPvYield - selfConsKwh;
+                let recoveredKwhValue = (selectedType === 'old_rules') ? (exportedKwh * 0.8) : (exportedKwh * 0.25);
+                consBase = netGridPurchaseKwh + selfConsKwh + recoveredKwhValue;
+            }
+        }
+        
+        let hpEl = document.getElementById('toggle-hp');
+        let slHpEl = document.getElementById('sl-hp-cons');
+        let evEl = document.getElementById('toggle-ev');
+        let slEvEl = document.getElementById('sl-ev-cons');
+
+        const consHP = (hpEl && hpEl.checked && slHpEl) ? parseFloat(slHpEl.value) : 0;
+        const consEV = (evEl && evEl.checked && slEvEl) ? parseFloat(slEvEl.value) : 0;
+        const totalCons = consBase + consHP + consEV;
+
+        let targetPV = 0; let addedPV = 0;
+        let curInvEl = document.getElementById('sl-cur-inv');
+        let curInv = curInvEl ? parseFloat(curInvEl.value) : 0;
+        
+        if (selectedType === 'none') {
+            let uPvEl = document.getElementById('sl-new-pv');
+            let uPV = uPvEl ? parseFloat(uPvEl.value) : 0;
+            targetPV = uPV === 0 ? (totalCons / 1000 * 1.2) : uPV;
+             addedPV = targetPV;
+        } else if (selectedType === 'old_rules' || selectedType === 'new_rules') {
+            let expEl = document.getElementById('toggle-expand-pv');
+            let isExp = expEl ? expEl.checked : false;
+            if (isExp) {
+                let tPvEl = document.getElementById('sl-target-pv');
+                let uTar = tPvEl ? parseFloat(tPvEl.value) : 0;
+                targetPV = uTar === 0 ? (totalCons / 1000 * 1.2) : uTar;
+                if (targetPV > curPV) addedPV = targetPV - curPV; else { targetPV = curPV; addedPV = 0; }
+            } else { targetPV = curPV; addedPV = 0; }
+        }
+
+        let pvDirEl = document.getElementById('pv-direction');
+        let pvDir = pvDirEl ? pvDirEl.value : 'south';
+        
+        let invMult = 0.95; let yieldMult = 5.0;
+         if (pvDir === 'south') { invMult = 0.95; yieldMult = 5.0; }
+        else if (pvDir === 'east_west') { invMult = 0.85; yieldMult = 4.2; }
+        else if (pvDir === 'east') { invMult = 0.9; yieldMult = 4.0; }
+        else if (pvDir === 'west') { invMult = 0.9; yieldMult = 4.0; }
+
+        let summerCons = (consBase * 0.5) + (consHP * 0.2) + (consEV * 0.5);
+        let winterCons = (consBase * 0.5) + (consHP * 0.8) + (consEV * 0.5);
+
+        let dailyWinterCons = winterCons / 180;
+        let winterEveningDemand = dailyWinterCons * 0.35;
+        
+        // Zmodyfikowana logika zimowa: dobór magazynu pod całościowe zużycie (na podstawie grafiki "pompa" = potężne zużycie)
+        let stratEl = document.getElementById('winter-strategy');
+        let strat = stratEl ? stratEl.value : 'eco';
+        let winterReqBatNominal;
+        if (strat === 'max') {
+            winterReqBatNominal = (dailyWinterCons * 0.8) / 0.9; 
+        } else {
+            // Skrypt domyślnie zabezpiecza całe dobowe zużycie zimowe jako punkt startowy przy wariancie 'eco' i inteligentnie nim zarządza
+            winterReqBatNominal = dailyWinterCons / 0.9; 
+        }
+
+        let summerReqBatNominal = targetPV * 1.0;
+        let reqBatNominal = Math.max(winterReqBatNominal, summerReqBatNominal) || 0;
+        
+        let isSolis = brand === 'solis';
+        let batList = isSolis ? PRICE_LIST.solis_bat : PRICE_LIST.bat;
+        let invList = isSolis ? PRICE_LIST.solis_inv : PRICE_LIST.inv;
+
+        let tempSizing = { totalCons, targetPV, curPV, addedPV, yieldMult, summerCons, winterCons, winterEveningDemand };
+        let matchedBat;
+        let effectiveForce = forcedBatCap !== null ? forcedBatCap : userForcedBatCap;
+        
+        if (effectiveForce !== null) {
+            matchedBat = batList.find(b => b.cap === effectiveForce) || batList.find(b => b.cap >= effectiveForce) || batList[batList.length - 1];
+        } else {
+            // Szukamy optymalnego na podstawie zapotrzebowania
+            matchedBat = batList.find(b => b.cap >= reqBatNominal) || batList[batList.length - 1];
+            if (!matchedBat || matchedBat.cap < 10) {
+                matchedBat = batList.find(b => b.cap >= 10) || batList[batList.length - 1];
+            }
+        }
+
+        let matchedInvName = ""; 
+        let isStringEl = document.getElementById('cur-inv-type');
+        let isString = isStringEl ? (isStringEl.value === 'string') : false;
+
+        let requiredInvPower = Math.max(targetPV * invMult, (isString ? curInv : 0));
+        requiredInvPower = requiredInvPower * 1.2;
+        
+        if (selectedType === 'only_bat') {
+            matchedInvName = isSolis ? "Solis Bateryjny Retrofit (5 kW)" : "Falownik Bateryjny Retrofit AC (5 kW)"; 
+         } else if (selectedType === 'none' || addedPV > 0 || isString) {
+            let matchedInv = invList.find(i => i.p >= requiredInvPower) || invList[invList.length - 1];
+            if (isString && addedPV === 0) {
+                matchedInvName = `Wymiana na: ${matchedInv.name}`;
+             } else {
+                matchedInvName = matchedInv.name;
+             }
+        } else {
+            matchedInvName = "Istniejący Falownik Hybrydowy"; 
+        }
+
+        let retailPrice = 0; 
+
+        return {
+             totalCons, targetPV, curPV, addedPV, matchedBat, matchedInvName, retailPrice,
+             winterEveningDemand: dailyWinterCons * 0.35, yieldMult, summerCons, winterCons
+         };
+    }
+
+    function autoSetCapex() {
+        const sizing4eco = getSystemSizingAndCost(null, '4eco');
+        const sizingSolis = getSystemSizingAndCost(null, 'solis');
+        window.baseRecommendedBatCap_4eco = sizing4eco.matchedBat.cap;
+        window.baseRecommendedBatCap_solis = sizingSolis.matchedBat.cap;
+        updateFinance(); 
+    }
+
+    function updateFinance() {
+        const sizing = getSystemSizingAndCost();
+        const alertNetBilling = document.getElementById('alert-sub-netbilling');
+        
+        if (alertNetBilling) {
+            let subEl = document.getElementById('toggle-sub');
+            if (selectedType === 'old_rules' && subEl && subEl.checked) {
+                alertNetBilling.style.display = 'block';
+            } else {
+                alertNetBilling.style.display = 'none';
+            }
+        }
+    }
+
+    function updateStepper() {
+        const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        let pBar = document.getElementById('progress-bar');
+        if(pBar) pBar.style.width = `${progress}%`;
+
+        document.querySelectorAll('.step-circle').forEach((circle, index) => {
+            circle.classList.remove('active', 'completed');
+            if (index + 1 === currentStep) circle.classList.add('active');
+             else if (index + 1 < currentStep) circle.classList.add('completed');
+        });
+
+        document.querySelectorAll('.step-content').forEach((content, index) => {
+            if (index + 1 === currentStep) content.classList.add('active');
+             else content.classList.remove('active');
+        });
+
+        setDisplay('btn-back', currentStep > 1 && currentStep < 5 ? 'block' : 'none');
+        
+        if (currentStep === 1) {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'none');
+         }
+         else if (currentStep < 4) {
+             setDisplay('btn-next', 'block');
+             setDisplay('btn-calc', 'none');
+         }
+         else if (currentStep === 4) {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'block');
+         }
+         else {
+             setDisplay('btn-next', 'none');
+             setDisplay('btn-calc', 'none');
+             setDisplay('btn-back', 'none'); 
+         }
+    }
+
+    function goToStep(n) {
+        if (n > 1 && !selectedType) {
+            alert("Wybierz najpierw sytuację w Kroku 1, aby przejść dalej.");
+            return;
+        }
+
+        currentStep = n;
+        if (currentStep === 4) autoSetCapex();
+        if (currentStep === 5) {
+            if (isUnlocked) calculateAndShowResults(false);
+        }
+        updateStepper();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function unlockResults() {
+        const email = document.getElementById('lead-email').value;
+        const phone = document.getElementById('lead-phone').value;
+        if(email.includes('@') && phone.length > 5) {
+            setDisplay('lead-gate', 'none');
+            setDisplay('audit-results', 'block');
+            isUnlocked = true;
+            calculateAndShowResults(true);
+        } else {
+            alert("Proszę podać poprawny adres e-mail i numer telefonu.");
+        }
+    }
+
+    function applyBatteryVariant(cap, brand) {
+        userForcedBatCap = cap;
+        currentBrand = brand;
+        calculateAndShowResults(false);
+    }
+
+    function calcFinancialsForVariant(cap, oldBill, overrideBrand) {
+        let vSizing = getSystemSizingAndCost(cap, overrideBrand);
+        let vCapex = vSizing.retailPrice;
+        let vSub = 0;
+        let vTax = 0;
+        let vNet = 0;
+
+        let finData = getEnergyAndProfit(cap, vSizing);
+        let energyCost = finData.energyCost;
+        let profit = finData.profit;
+
+        let netEnergyCost = energyCost - profit;
+        let vNewBill = 0;
+        let vDep = 0;
+        let fixedGridCosts = 400;
+        
+        let ssoSubscription = 0;
+        if (overrideBrand === '4eco') {
+            ssoSubscription = cap * 2 * 12; 
+        } else if (overrideBrand === 'solis') {
+            ssoSubscription = 19.90 * 12; 
+        }
+
+        if (netEnergyCost < 0) {
+            vDep = Math.abs(netEnergyCost);
+            vNewBill = fixedGridCosts + ssoSubscription;
+         } else {
+            vNewBill = fixedGridCosts + netEnergyCost + ssoSubscription;
+        }
+
+        let vSav = oldBill - vNewBill + vDep;
+        if (vSav < 0) vSav = 0;
+
+        let vSafeDeposit = energyCost;
+        let vGenDeposit = profit;
+
+        return { vNet, vNewBill, vDep, vSav, vSizing, vCapex, vSafeDeposit, vGenDeposit, ssoSubscription };
+    }
+    
+    function get6Caps(standardCaps, recommendedCap) {
+        let baseIndex = standardCaps.findIndex(c => c >= recommendedCap);
+        if (baseIndex === -1) baseIndex = standardCaps.length - 1;
+        
+        let startIdx = Math.max(0, baseIndex - 1);
+        let endIdx = Math.min(standardCaps.length, startIdx + 6);
+        if (endIdx - startIdx < 6) {
+            startIdx = Math.max(0, endIdx - 6);
+        }
+        return standardCaps.slice(startIdx, startIdx + 6);
+    }
+
+    function calculateAndShowResults(shouldScroll = true) {
+        try {
+            if (!isUnlocked) return;
+
+            let tempForce = userForcedBatCap;
+            userForcedBatCap = null;
+            
+            let origSizing4eco = getSystemSizingAndCost(null, '4eco');
+            let origSizingSolis = getSystemSizingAndCost(null, 'solis');
+            
+            let recommendedCap4eco = origSizing4eco.matchedBat.cap;
+            let recommendedCapSolis = origSizingSolis.matchedBat.cap;
+            
+            userForcedBatCap = tempForce; 
+
+            const sizingBase = getSystemSizingAndCost();
+            let Y_costNoPV = sizingBase.totalCons * 1.09;
+            let oldBill = 0;
+            let fixedGridCosts = 400;
+            
+            let usageProfileEl = document.getElementById('usage-profile');
+            let usageProfile = usageProfileEl ? usageProfileEl.value : 'standard';
+            let selfConsRate = usageProfile === 'smart' ? 0.45 : (usageProfile === 'day' ? 0.35 : 0.20);
+            let selfCons = sizingBase.totalCons * selfConsRate; 
+            
+             if (inputMode === 'bill') {
+                let slBillEl = document.getElementById('sl-bill');
+                oldBill = (parseFloat(slBillEl ? slBillEl.value : 0) || 0) * 12;
+            } else {
+                if (selectedType === 'none' || selectedType === 'only_bat') {
+                    oldBill = Y_costNoPV;
+                } else if (selectedType === 'old_rules') {
+                     let exported = Math.max(0, (sizingBase.curPV * 950) - selfCons);
+                    let recovered = exported * 0.8;
+                    let bought = sizingBase.totalCons - selfCons;
+                    let netBought = Math.max(0, bought - recovered);
+                    oldBill = fixedGridCosts + (netBought * 1.09);
+                 } else if (selectedType === 'new_rules') {
+                    let exported = Math.max(0, (sizingBase.curPV * 950) - selfCons);
+                    let soldValue = exported * 0.25;
+                     let bought = sizingBase.totalCons - selfCons;
+                    let boughtCost = bought * 1.09;
+                     oldBill = fixedGridCosts + Math.max(0, boughtCost - soldValue);
+                }
+            }
+
+            let finMain = calcFinancialsForVariant(sizingBase.matchedBat.cap, oldBill, currentBrand);
+            const sizing = finMain.vSizing;
+            let newBill = finMain.vNewBill;
+            let depositSurplus = finMain.vDep;
+            let annualSavings = finMain.vSav;
+
+            // Wypełnienie uśrednionego zapotrzebowania
+            let dailyWinter = sizingBase.winterCons / 180;
+            let dailySummer = sizingBase.summerCons / 185;
+            setText('res-daily-winter', dailyWinter.toFixed(1) + " kWh / dobę");
+            setText('res-daily-summer', dailySummer.toFixed(1) + " kWh / dobę");
+            setText('res-rec-bat', recommendedCap4eco + " kWh");
+            
+            setText('pdf-daily-winter', dailyWinter.toFixed(1) + " kWh");
+            setText('pdf-daily-summer', dailySummer.toFixed(1) + " kWh");
+            setText('pdf-rec-bat', recommendedCap4eco + " kWh");
+
+            let msgHtml = "";
+            let pdfMsgHtml = "";
+            if (selectedType !== 'none') {
+                msgHtml = `Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie, pomimo posiadania fotowoltaiki. Gdybyś jej nie miał w ogóle, Twój rachunek wynosiłby aż <strong>${formatNum(Y_costNoPV)}</strong>.<br><br>Dzięki naszemu rozwiązaniu i tarczy Aieco, Twój rachunek spadnie do zaledwie <strong style="color:var(--primary); font-size:1.2rem;">${formatNum(newBill)}</strong> rocznie!`;
+                pdfMsgHtml = `Szanowny Kliencie,<br>Płaci Pan/Pani obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie, pomimo posiadania instalacji PV. Bez niej, rachunek wynosiłby ok. <strong>${formatNum(Y_costNoPV)}</strong>.<br><br>Dzięki wdrożeniu naszego systemu z magazynem energii, Pana/Pani nowy rachunek zostanie zredukowany do ok. <strong style="color:#10B981;">${formatNum(newBill)}</strong> rocznie.`;
+            } else {
+                msgHtml = `Szanowny kliencie, płacisz obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie.<br><br>Dzięki naszej instalacji z inteligentnym magazynem, Twój nowy rachunek spadnie do zaledwie <strong style="color:var(--primary); font-size:1.2rem;">${formatNum(newBill)}</strong> rocznie!`;
+                pdfMsgHtml = `Szanowny Kliencie,<br>Płaci Pan/Pani obecnie za prąd ok. <strong>${formatNum(oldBill)}</strong> rocznie.<br><br>Dzięki wdrożeniu naszej kompleksowej instalacji z magazynem energii, Pana/Pani nowy rachunek zostanie zredukowany do ok. <strong style="color:#10B981;">${formatNum(newBill)}</strong> rocznie.`;
+            }
+            
+            if (depositSurplus > 0) {
+                 msgHtml += ` A dodatkowo wygenerujesz <strong style="color:var(--primary);">${formatNum(depositSurplus)}</strong> rocznej nadwyżki z RCE!`;
+            }
+
+            setHtml('personalized-message', msgHtml);
+            setHtml('pdf-personalized-message', pdfMsgHtml);
+
+            let standardCaps4eco = [5, 10, 15, 16, 20, 25, 30, 32];
+            let subEl = document.getElementById('toggle-sub');
+            if (subEl && subEl.checked) standardCaps4eco = standardCaps4eco.filter(c => c >= 10);
+            let uniqueCaps4eco = get6Caps(standardCaps4eco, recommendedCap4eco);
+
+            let htmlVariants4eco = "";
+            uniqueCaps4eco.forEach(cap => {
+                let fin = calcFinancialsForVariant(cap, oldBill, '4eco');
+                let isActive = (cap === sizing.matchedBat.cap && currentBrand === '4eco') ? "active" : "";
+                
+                let isDanger = fin.vDep <= 0; 
+                let dangerClass = isDanger ? "danger" : "";
+                
+                let badge = "";
+                if (cap === recommendedCap4eco) {
+                    badge = `<div class="upsell-badge rec">Zalecany</div>`;
+                } else if (isDanger) {
+                    badge = `<div class="upsell-badge" style="background:var(--danger); color:#fff;">Za mały</div>`;
+                } else {
+                    badge = `<div class="upsell-badge">+ Niezależność</div>`;
+                }
+                
+                if (isActive) {
+                    badge = `<div class="upsell-badge rec" style="box-shadow: 0 0 5px rgba(255,255,255,0.5); ${isDanger ? 'background:var(--danger);' : ''}">Obecnie Wybrany</div>`;
+                }
+
+                let depositBadge = fin.vDep > 0 
+                    ? `<div class="upsell-deposit">+ ${formatNum(fin.vDep)} Depozytu</div>` 
+                    : `<div class="upsell-deposit" style="color:var(--danger); border-color:var(--danger); background:rgba(239,68,68,0.1);">Brak nadwyżki</div>`;
+
+                let priceDisplay = `<div class="upsell-price" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Sprawdź na mailu</div>`;
+
+                htmlVariants4eco += `
+                <div class="upsell-card ${isActive} ${dangerClass}" onclick="applyBatteryVariant(${cap}, '4eco')">
+                    ${badge}
+                    <div class="upsell-title">${cap} kWh</div>
+                    <div class="upsell-desc">${fin.vSizing.matchedBat.name}</div>
+                    ${priceDisplay}
+                    ${depositBadge}
+                </div>`;
+            });
+            setHtml('bat-variants-grid', htmlVariants4eco);
+
+            let standardCapsSolis = [5, 10, 15, 20, 25, 30];
+            if (subEl && subEl.checked) standardCapsSolis = standardCapsSolis.filter(c => c >= 10);
+            let uniqueCapsSolis = get6Caps(standardCapsSolis, recommendedCapSolis);
+
+            let htmlVariantsSolis = "";
+            uniqueCapsSolis.forEach(cap => {
+                let fin = calcFinancialsForVariant(cap, oldBill, 'solis');
+                let isActive = (cap === sizing.matchedBat.cap && currentBrand === 'solis') ? "active" : "";
+                
+                let isDanger = fin.vDep <= 0; 
+                let dangerClass = isDanger ? "danger" : "";
+                
+                let badge = "";
+                if (cap === recommendedCapSolis) {
+                    badge = `<div class="upsell-badge rec">Zalecany</div>`;
+                } else if (isDanger) {
+                    badge = `<div class="upsell-badge" style="background:var(--danger); color:#fff;">Za mały</div>`;
+                } else {
+                    badge = `<div class="upsell-badge">+ Niezależność</div>`;
+                }
+                
+                if (isActive) {
+                    badge = `<div class="upsell-badge rec" style="box-shadow: 0 0 5px rgba(255,255,255,0.5); ${isDanger ? 'background:var(--danger);' : ''}">Obecnie Wybrany</div>`;
+                }
+
+                let depositBadge = fin.vDep > 0 
+                    ? `<div class="upsell-deposit">+ ${formatNum(fin.vDep)} Depozytu</div>` 
+                    : `<div class="upsell-deposit" style="color:var(--danger); border-color:var(--danger); background:rgba(239,68,68,0.1);">Brak nadwyżki</div>`;
+
+                let priceDisplay = `<div class="upsell-price" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Sprawdź na mailu</div>`;
+
+                htmlVariantsSolis += `
+                <div class="upsell-card ${isActive} ${dangerClass}" onclick="applyBatteryVariant(${cap}, 'solis')">
+                    ${badge}
+                    <div class="upsell-title">${cap} kWh</div>
+                    <div class="upsell-desc">${fin.vSizing.matchedBat.name}</div>
+                    ${priceDisplay}
+                    ${depositBadge}
+                </div>`;
+            });
+            setHtml('solis-variants-grid', htmlVariantsSolis);
+
+            let pvText = sizing.targetPV > 0 ? sizing.targetPV.toFixed(1) + " kWp" : "Brak";
+            if(sizing.addedPV > 0) pvText += ` (+${sizing.addedPV.toFixed(1)} kWp rozbudowa)`;
+            setText('res-pv', pvText);
+            setText('p-pv', pvText);
+            
+            setText('res-inv', sizing.matchedInvName);
+            setText('p-inv', sizing.matchedInvName);
+            
+            let batText = sizing.matchedBat.cap > 0 ? `${sizing.matchedBat.name} (${sizing.matchedBat.cap} kWh)` : "Brak";
+            setText('res-bat', batText);
+            setText('p-bat', batText);
+            
+            let logText = currentBrand === 'solis' ? "Wbudowany w falownik (Brak zewn. EMS)" : "Inteligentny Logger Wi-Fi (Moduł EMS)";
+            setText('res-logger', logText);
+            setText('p-logger', logText);
+
+            let backText = wantsBackup ? "Tak (Moduł EPS + SZR)" : "Nie";
+            setText('res-backup', backText);
+            setText('p-backup', backText);
+            
+            let tariffEl = document.getElementById('target-tariff');
+            const tariff = tariffEl ? tariffEl.value.toUpperCase() : "G12";
+            setText('res-grid', tariff + (selectedType !== 'only_bat' ? " + RCE" : ""));
+
+            let cumm = 0;
+            let cumm5y = 0;
+
+            for(let i=1; i<=15; i++) {
+                let inf = Math.pow(1.04, i-1);
+                let yrOld = oldBill * inf;
+                let yrNewCalc = newBill * inf;
+                let yrSav = yrOld - yrNewCalc + (depositSurplus * inf);
+                
+                cumm += yrSav;
+                if (i === 5) {
+                    cumm5y = cumm;
+                }
+            }
+
+            // Uzupełnienie kafelków zysków 1, 5, 15 lat (strona)
+            setText('res-sav-1', formatNum(annualSavings));
+            setText('res-sav-5', formatNum(cumm5y));
+            setText('res-sav-15', formatNum(cumm));
+
+            // Uzupełnienie kafelków zysków (PDF)
+            setText('p-roi', formatNum(annualSavings));
+            setText('p-sav-5', formatNum(cumm5y));
+            setText('p-total-sav', formatNum(cumm));
+
+            // Wypełnienie dynamicznej wiadomości o optymalizacji po roku
+            let selectedCap = sizing.matchedBat.cap;
+            let capText = selectedCap > 0 ? selectedCap + ' kWh' : 'dobranej na start';
+            
+            let recNoteHtml = `
+                <h4 style="color: var(--primary); border-bottom-color: rgba(16, 185, 129, 0.3);">💡 Optymalizacja po pierwszym roku</h4>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                    Dzisiaj proponujemy Ci magazyn energii o pojemności <strong>${capText}</strong>. Należy jednak pamiętać, że całkowite i w 100% precyzyjne zbilansowanie systemu do poziomu najniższych możliwych rachunków będziemy w stanie określić po pierwszym sezonie użytkowania. System Aieco (EMS) na bieżąco uczy się Twojego profilu i zbiera realne dane pomiarowe z Twojej instalacji. Po pełnym roku będziemy mogli z całkowitą pewnością stwierdzić, czy np. Twoje potrzeby się zmieniły i czy warto rozbudować magazyn o dodatkowe moduły.
+                </p>
+            `;
+            setHtml('dynamic-recommendation-note', recNoteHtml);
+            
+            let pdfRecNoteHtml = `
+                <h3 style="color: #10B981 !important; margin-bottom: 10px; border-bottom: none !important;">💡 Optymalizacja po pierwszym roku</h3>
+                <p style="font-size: 12px; color: #475569 !important; line-height: 1.6; margin: 0;">
+                    Dzisiaj proponujemy Ci magazyn energii o pojemności <strong>${capText}</strong>. Należy jednak pamiętać, że całkowite i w 100% precyzyjne zbilansowanie systemu do poziomu najniższych możliwych rachunków będziemy w stanie określić po pierwszym sezonie użytkowania. System Aieco (EMS) na bieżąco uczy się Twojego profilu i zbiera realne dane pomiarowe z Twojej instalacji. Po pełnym roku będziemy mogli z całkowitą pewnością stwierdzić, czy np. Twoje potrzeby się zmieniły i czy warto rozbudować magazyn o dodatkowe moduły.
+                </p>
+            `;
+            setHtml('pdf-dynamic-recommendation-note', pdfRecNoteHtml);
+
+            if(shouldScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // 🔥 Wypełnij ukryte pola CF7 po przeliczeniu wyników
+        fillCF7HiddenFields();
+
+        } catch (err) {
+            alert("Aplikacja napotkała błąd podczas generowania wyniku. Prawdopodobnie wprowadzono niepełne dane.");
+            console.error("Szczegóły błędu: ", err);
+        }
+    }
+
+    function generatePDF() {
+        setText('print-date', new Date().toLocaleDateString('pl-PL'));
+        window.print();
+    }
+</script>
+<script>
+function fillCF7HiddenFields() {
+    document.getElementById("cf7-pv").value          = document.getElementById("res-pv").innerText;
+    document.getElementById("cf7-battery").value     = document.getElementById("res-bat").innerText;
+    document.getElementById("cf7-inverter").value    = document.getElementById("res-inv").innerText;
+    document.getElementById("cf7-tariff").value      = document.getElementById("res-grid").innerText;
+
+    document.getElementById("cf7-winterDaily").value = document.getElementById("res-daily-winter").innerText;
+    document.getElementById("cf7-summerDaily").value = document.getElementById("res-daily-summer").innerText;
+
+    document.getElementById("cf7-s1").value          = document.getElementById("res-sav-1").innerText;
+    document.getElementById("cf7-s5").value          = document.getElementById("res-sav-5").innerText;
+    document.getElementById("cf7-s15").value         = document.getElementById("res-sav-15").innerText;
+
+    document.getElementById("cf7-profile").value     = document.getElementById("usage-profile").value;
+    document.getElementById("cf7-backup").value      = window.wantsBackup ? "Tak" : "Nie";
+    document.getElementById("cf7-brand").value       = window.currentBrand || "";
+}
+
+document.addEventListener('wpcf7mailsent', function(event) {
+    fetch('https://script.google.com/macros/s/AKfycbxZ7Yy5bItuQJ7OWb8I92bcUoYpUtpHU_VDizDDsT0OMwkjUZMP1LetjyUbfTtR5fK7/exec', {
+        method: 'POST',
+        body: JSON.stringify({
+            email:       document.querySelector('[name="your-email"]').value,
+            phone:       document.querySelector('[name="your-phone"]').value,
+            pv:          document.querySelector('[name="pv"]').value,
+            battery:     document.querySelector('[name="battery"]').value,
+            inverter:    document.querySelector('[name="inverter"]').value,
+            tariff:      document.querySelector('[name="tariff"]').value,
+            winterDaily: document.querySelector('[name="winterDaily"]').value,
+            summerDaily: document.querySelector('[name="summerDaily"]').value,
+            savings1:    document.querySelector('[name="savings1"]').value,
+            savings5:    document.querySelector('[name="savings5"]').value,
+            savings15:   document.querySelector('[name="savings15"]').value,
+            profile:     document.querySelector('[name="profile"]').value,
+            backup:      document.querySelector('[name="backup"]').value,
+            brand:       document.querySelector('[name="brand"]').value
+        })
+    });
+});
+</script>
+
+</body>
+</html>
